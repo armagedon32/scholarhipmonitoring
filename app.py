@@ -189,7 +189,8 @@ def all_scholars_with_latest():
                    sch.gwa_threshold, sch.max_failed_subjects,
                    a.socio_status, a.gwa AS app_gwa, a.failed_subjects AS app_failed,
                    a.attendance_rate AS app_att, a.units_enrolled AS app_units,
-                   a.year_level AS app_year
+                   a.year_level AS app_year,
+                   a.created_at AS app_submitted, a.reviewed_at AS app_approved
             FROM scholars s
             JOIN users u ON u.id = s.student_id
             LEFT JOIN scholarships sch ON sch.id = s.scholarship_id
@@ -690,8 +691,10 @@ def coord_export(kind):
     if kind == "retention":
         rows = all_scholars_with_latest()
         return _csv_response("retention_report.csv",
-                             ["Scholar", "Scholarship", "Retention Status", "Risk Score (%)"],
-                             [[r["full_name"], r["sch_name"], r["retention_status"] or "Pending", r["risk_score"] or ""] for r in rows])
+                             ["Scholar", "Scholarship", "Status of Student", "Risk Score (%)",
+                              "Date Submitted", "Date Approved"],
+                             [[r["full_name"], r["sch_name"], r["retention_status"] or "Pending",
+                               r["risk_score"] or "", r["app_submitted"] or "", r["app_approved"] or ""] for r in rows])
     abort(404)
 
 

@@ -54,14 +54,17 @@
   <div class="card">
     <h3>Retention Prediction Report</h3>
     <table class="table">
-      <thead><tr><th>Scholar</th><th>Retention</th><th>Risk %</th></tr></thead>
+      <thead><tr><th>Scholar</th><th>Status of Student</th><th>Risk %</th>
+        <th>Date Submitted</th><th>Date Approved</th></tr></thead>
       <tbody>
       {% for s in scholars %}
         <tr><td>{{ s.full_name }}</td>
           <td>{% if s.retention_status %}
                 <span class="badge badge-{{ 'ok' if s.retention_status=='Retained' else 'bad' }}">{{ s.retention_status }}</span>
               {% else %}<span class="badge badge-pending">Pending</span>{% endif %}</td>
-          <td>{{ s.risk_score if s.risk_score is not none else '-' }}</td></tr>
+          <td>{{ s.risk_score if s.risk_score is not none else '-' }}</td>
+          <td>{{ s.app_submitted or '-' }}</td>
+          <td>{{ s.app_approved or '-' }}</td></tr>
       {% endfor %}
       </tbody>
     </table>
