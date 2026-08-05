@@ -72,7 +72,7 @@ body {
 /* ---------- Brand mark ---------- */
 .brand-logo {
   width: 42px; height: 42px; border-radius: 10px;
-  background: var(--accent); color: #fff;
+  background: transparent; color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 18px; letter-spacing: .5px;
   overflow: hidden;
