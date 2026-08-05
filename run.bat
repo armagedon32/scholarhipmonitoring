@@ -1,10 +1,10 @@
 @echo off
 setlocal
-title ScholarNet - Kolehiyo ng Subic
+title Scholarship Management - Kolehiyo ng Subic
 cd /d "%~dp0"
 
 echo ==============================================
-echo  ScholarNet - Scholarship Application and
+echo  Scholarship Management - Scholarship Application and
 echo  Performance Monitoring Platform
 echo  Kolehiyo ng Subic
 echo ==============================================
