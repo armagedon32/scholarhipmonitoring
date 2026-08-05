@@ -9,7 +9,10 @@
 <body class="app-body">
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <span class="brand-logo">KnS</span>
+    <span class="brand-logo">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="KnS"
+           onerror="this.closest('.brand-logo').classList.add('logo-missing')">
+    </span>
     <div>
       <strong>ScholarNet</strong>
       <small>Kolehiyo ng Subic</small>

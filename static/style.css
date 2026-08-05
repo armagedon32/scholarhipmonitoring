@@ -75,8 +75,12 @@ body {
   background: var(--accent); color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 18px; letter-spacing: .5px;
+  overflow: hidden;
 }
 .brand-logo-lg { width: 64px; height: 64px; font-size: 26px; border-radius: 14px; }
+.brand-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
+.brand-logo.logo-missing img { display: none; }
+.brand-logo.logo-missing::before { content: "KnS"; }
 
 /* ---------- Main / topbar ---------- */
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }

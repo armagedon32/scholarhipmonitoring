@@ -9,7 +9,10 @@
 <body class="auth-body">
   <div class="auth-card">
     <div class="auth-brand">
-      <div class="brand-logo brand-logo-lg">KnS</div>
+      <div class="brand-logo brand-logo-lg">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="KnS"
+             onerror="this.closest('.brand-logo').classList.add('logo-missing')">
+      </div>
       <h1>ScholarNet</h1>
       <p>Web-Based Scholarship Application &amp; Performance Monitoring Platform<br>
          with Retention Modeling System</p>
