@@ -367,7 +367,6 @@ def student_apply():
             units = int(request.form["units_enrolled"])
             att = float(request.form["attendance_rate"])
             socio = request.form["socio_status"]
-            year = int(request.form["year_level"])
             sch_id = int(request.form["scholarship_id"])
         except (KeyError, ValueError):
             flash("Please fill in all required fields with valid values.", "error")
@@ -391,9 +390,9 @@ def student_apply():
             db.execute("""
                 INSERT INTO applications
                 (applicant_id, scholarship_id, gwa, failed_subjects, units_enrolled,
-                 attendance_rate, socio_status, year_level, documents, status, eligibility)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
-                (g.user["id"], sch_id, gwa, failed, units, att, socio, year,
+                 attendance_rate, socio_status, documents, status, eligibility)
+                VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                (g.user["id"], sch_id, gwa, failed, units, att, socio,
                  request.form.get("documents", ""), "pending",
                  "Eligible" if eligible else "Ineligible"))
         audit("APPLY", f"{g.user['full_name']} submitted an application")

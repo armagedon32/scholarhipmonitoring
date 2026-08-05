@@ -50,7 +50,7 @@ check("student apply form", client.get("/student/apply"))
 r = client.post("/student/apply", data={
     "scholarship_id": "2", "gwa": "1.85", "failed_subjects": "0",
     "units_enrolled": "18", "attendance_rate": "92", "socio_status": "Low",
-    "year_level": "2", "documents": "Report.pdf"}, follow_redirects=True)
+    "documents": "Report.pdf"}, follow_redirects=True)
 check("student apply submit", r)
 check("notifications", client.get("/notifications"))
 check("logout", client.get("/logout", follow_redirects=True))
