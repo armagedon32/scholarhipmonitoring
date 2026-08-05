@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS applications (
     units_enrolled   INTEGER DEFAULT 0,
     attendance_rate  REAL,
     socio_status     TEXT,
+    annual_income    REAL,
     year_level       INTEGER,
     documents        TEXT,
     status           TEXT DEFAULT 'pending',
@@ -123,6 +124,14 @@ def init_db():
         db.executescript(SCHEMA)
 
 
+def migrate():
+    """Add columns introduced after first deploy to existing databases."""
+    with get_db() as db:
+        cols = {r["name"] for r in db.execute("PRAGMA table_info(applications)").fetchall()}
+        if "annual_income" not in cols:
+            db.execute("ALTER TABLE applications ADD COLUMN annual_income REAL")
+
+
 def _seed(conn):
     users = [
         ("coordinator", "coordinator", "Maria Santos", "maria.santos@knsubic.edu.ph", "coordinator"),
@@ -194,12 +203,14 @@ def _create_demo_application(db, student_id):
     attendance = round(random.uniform(55, 100), 1)
     socio = random.choice(["Low", "Lower-Middle", "Middle", "Upper-Middle"])
     year = random.randint(1, 4)
+    annual_income = random.choice([60000, 120000, 250000, 450000])
     db.execute(
         """INSERT INTO applications
            (applicant_id, scholarship_id, gwa, failed_subjects, units_enrolled,
-            attendance_rate, socio_status, year_level, documents, status, eligibility)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
-        (student_id, scholarship_id, gwa, failed, units, attendance, socio, year,
-         "Grade_Report.pdf, Good_Moral.pdf", "pending",
+            attendance_rate, socio_status, annual_income, year_level, documents,
+            status, eligibility)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (student_id, scholarship_id, gwa, failed, units, attendance, socio,
+         annual_income, year, "Grade_Report.pdf, Good_Moral.pdf", "pending",
          "Eligible" if gwa <= 2.5 and failed <= 2 else "Ineligible"),
     )

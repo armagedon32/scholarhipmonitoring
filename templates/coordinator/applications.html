@@ -12,16 +12,17 @@
   <table class="table">
     <thead>
       <tr><th>ID</th><th>Applicant</th><th>Scholarship</th><th>GWA</th><th>Failed</th>
-          <th>Attend.</th><th>Auto-Check</th><th>Status</th><th>Actions</th></tr>
+          <th>Income</th><th>Attend.</th><th>Auto-Check</th><th>Status</th><th>Actions</th></tr>
     </thead>
     <tbody>
     {% for a in apps %}
       <tr>
         <td>#{{ a.id }}</td>
-        <td>{{ a.full_name }} <small class="muted">({{ a.year_level }}Y)</small></td>
+        <td>{{ a.full_name }}</td>
         <td>{{ a.sch_name }} <small class="muted">({{ a.sch_code }})</small></td>
         <td>{{ a.gwa }}</td>
         <td>{{ a.failed_subjects }}</td>
+        <td>{{ '\u20b1{:,.0f}'.format(a.annual_income) if a.annual_income is not none else '-' }}</td>
         <td>{{ a.attendance_rate }}%</td>
         <td>
           {% set meets = a.gwa and a.gwa <= a.gwa_threshold and a.failed_subjects <= a.max_failed_subjects %}

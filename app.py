@@ -14,7 +14,7 @@ from flask import (Flask, abort, flash, g, redirect, render_template,
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from config import Config
-from database import get_db, init_db, seed_demo
+from database import get_db, init_db, migrate, seed_demo
 from ml.predict import model
 
 app = Flask(__name__)
@@ -36,6 +36,7 @@ def _bootstrap():
         os.makedirs(os.path.dirname(Config.DATABASE) or ".", exist_ok=True)
         init_db()
         seed_demo()
+    migrate()
 
 
 _bootstrap()
@@ -367,6 +368,7 @@ def student_apply():
             units = int(request.form["units_enrolled"])
             att = float(request.form["attendance_rate"])
             socio = request.form["socio_status"]
+            annual_income = float(request.form["annual_income"])
             sch_id = int(request.form["scholarship_id"])
         except (KeyError, ValueError):
             flash("Please fill in all required fields with valid values.", "error")
@@ -390,9 +392,9 @@ def student_apply():
             db.execute("""
                 INSERT INTO applications
                 (applicant_id, scholarship_id, gwa, failed_subjects, units_enrolled,
-                 attendance_rate, socio_status, documents, status, eligibility)
-                VALUES (?,?,?,?,?,?,?,?,?,?)""",
-                (g.user["id"], sch_id, gwa, failed, units, att, socio,
+                 attendance_rate, socio_status, annual_income, documents, status, eligibility)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                (g.user["id"], sch_id, gwa, failed, units, att, socio, annual_income,
                  request.form.get("documents", ""), "pending",
                  "Eligible" if eligible else "Ineligible"))
         audit("APPLY", f"{g.user['full_name']} submitted an application")
@@ -667,11 +669,12 @@ def coord_export(kind):
         with get_db() as db:
             rows = db.execute("""
                 SELECT u.full_name, s.name, a.status, a.eligibility, a.gwa,
-                       a.failed_subjects, a.created_at FROM applications a
+                       a.failed_subjects, a.annual_income, a.created_at FROM applications a
                 JOIN users u ON u.id=a.applicant_id
                 JOIN scholarships s ON s.id=a.scholarship_id ORDER BY a.id""").fetchall()
         return _csv_response("applicant_list.csv",
-                             ["Applicant", "Scholarship", "Status", "Eligibility", "GWA", "Failed Subjects", "Submitted"],
+                             ["Applicant", "Scholarship", "Status", "Eligibility", "GWA", "Failed Subjects",
+                              "Annual Income (PHP)", "Submitted"],
                              [list(r) for r in rows])
     if kind == "roster":
         rows = all_scholars_with_latest()
