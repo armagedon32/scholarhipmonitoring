@@ -12,6 +12,7 @@ import secrets
 from flask import (Flask, abort, flash, g, redirect, render_template,
                    request, Response, session, url_for)
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 from config import Config
 from database import get_db, init_db, migrate, seed_demo
@@ -379,6 +380,25 @@ def student_apply():
         if not 1.0 <= gwa <= 5.0:
             flash("GWA must be between 1.00 and 5.00.", "error")
             return redirect(url_for("student_apply"))
+        # Save uploaded documents beside the database (persists on the Railway volume).
+        saved_names = []
+        for f in request.files.getlist("document_uploads"):
+            if not f or not f.filename:
+                continue
+            fname = secure_filename(f.filename)
+            if not fname:
+                continue
+            ext = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
+            if ext not in Config.ALLOWED_EXTENSIONS:
+                flash(f"File type not allowed for {f.filename}. "
+                      f"Allowed: {', '.join(sorted(Config.ALLOWED_EXTENSIONS))}.", "error")
+                return redirect(url_for("student_apply"))
+            os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
+            dest = os.path.join(Config.UPLOAD_FOLDER, fname)
+            f.save(dest)
+            saved_names.append(fname)
+        typed = [d.strip() for d in request.form.get("documents", "").split(",") if d.strip()]
+        all_docs = ", ".join(typed + saved_names) if (typed or saved_names) else ""
         with get_db() as db:
             sch = db.execute("SELECT * FROM scholarships WHERE id=? AND is_active=1",
                              (sch_id,)).fetchone()
@@ -398,7 +418,7 @@ def student_apply():
                  attendance_rate, socio_status, annual_income, documents, status, eligibility)
                 VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
                 (g.user["id"], sch_id, gwa, failed, units, att, socio, annual_income,
-                 request.form.get("documents", ""), "pending",
+                 all_docs, "pending",
                  "Eligible" if eligible else "Ineligible"))
         audit("APPLY", f"{g.user['full_name']} submitted an application")
         notify(g.user["id"], "Application Submitted",

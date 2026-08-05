@@ -8,5 +8,6 @@ env/
 .env
 scholarship.db
 data/
+uploads/
 .mypy_cache/
 .pytest_cache/
