@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS scholarships (
     requirements        TEXT,
     gwa_threshold       REAL DEFAULT 2.50,
     max_failed_subjects INTEGER DEFAULT 0,
+    apply_start         TEXT,
+    apply_deadline      TEXT,
     is_active           INTEGER DEFAULT 1
 );
 
@@ -130,6 +132,11 @@ def migrate():
         cols = {r["name"] for r in db.execute("PRAGMA table_info(applications)").fetchall()}
         if "annual_income" not in cols:
             db.execute("ALTER TABLE applications ADD COLUMN annual_income REAL")
+        sch_cols = {r["name"] for r in db.execute("PRAGMA table_info(scholarships)").fetchall()}
+        if "apply_start" not in sch_cols:
+            db.execute("ALTER TABLE scholarships ADD COLUMN apply_start TEXT")
+        if "apply_deadline" not in sch_cols:
+            db.execute("ALTER TABLE scholarships ADD COLUMN apply_deadline TEXT")
 
 
 def _seed(conn):
@@ -149,21 +156,21 @@ def _seed(conn):
     scholarships = [
         ("KnS-ACAD", "Kolehiyo ng Subic Academic Scholarship",
          "Merit-based scholarship for scholars with outstanding academic standing.",
-         "GWA <= 2.00; no failing grade", 2.00, 0),
+         "GWA <= 2.00; no failing grade", 2.00, 0, "2026-08-01", "2026-08-31"),
         ("KnS-CHED", "CHED Grants-in-Aid (GIA)",
          "Commission on Higher Education grants for enrolled scholars.",
-         "GWA <= 2.50; max 2 failed subjects", 2.50, 2),
+         "GWA <= 2.50; max 2 failed subjects", 2.50, 2, "2026-08-01", "2026-08-31"),
         ("KnS-MUNI", "LGU Scholarship (Subic Municipal)",
          "Local government unit scholarship for residents of Subic, Zambales.",
-         "Resident of Subic, Zambales", None, None),
+         "Resident of Subic, Zambales", None, None, "2026-08-01", "2026-08-31"),
         ("KnS-DOST", "DOST-SEI Scholarship",
          "Department of Science and Technology scholarship for science & tech programs.",
-         "GWA <= 2.00; no failing grade", 2.00, 0),
+         "GWA <= 2.00; no failing grade", 2.00, 0, "2026-08-01", "2026-08-31"),
     ]
-    for code, name, desc, req, gwa, fail in scholarships:
+    for code, name, desc, req, gwa, fail, start, end in scholarships:
         conn.execute(
-            "INSERT INTO scholarships (code, name, description, requirements, gwa_threshold, max_failed_subjects) VALUES (?,?,?,?,?,?)",
-            (code, name, desc, req, gwa, fail),
+            "INSERT INTO scholarships (code, name, description, requirements, gwa_threshold, max_failed_subjects, apply_start, apply_deadline) VALUES (?,?,?,?,?,?,?,?)",
+            (code, name, desc, req, gwa, fail, start, end),
         )
 
 

@@ -10,7 +10,8 @@
         {% for s in scholarships %}
         <option value="{{ s.id }}"
                 {% if s.gwa_threshold is not none %}data-gwa-threshold="{{ s.gwa_threshold }}"{% endif %}
-                {% if s.max_failed_subjects is not none %}data-max-failed="{{ s.max_failed_subjects }}"{% endif %}>{{ s.name }} ({{ s.code }})</option>
+                {% if s.max_failed_subjects is not none %}data-max-failed="{{ s.max_failed_subjects }}"{% endif %}
+                {% if not s.window_open %}data-window-closed="1"{% endif %}>{{ s.name }} ({{ s.code }}){% if not s.window_open %} — {{ s.window_msg }}{% endif %}</option>
         {% endfor %}
       </select>
     </label>
@@ -62,6 +63,13 @@
   function check() {
     var opt = sel.selectedOptions[0];
     if (!opt) return;
+    if (opt.dataset.windowClosed !== undefined && opt.dataset.windowClosed !== '') {
+      banner.hidden = false;
+      banner.className = 'flash flash-error';
+      banner.textContent = opt.text.replace(/ \u2014 .*$/, '') + ': applications are currently closed.';
+      btn.disabled = true;
+      return;
+    }
     var hasGwa = opt.dataset.gwaThreshold !== undefined && opt.dataset.gwaThreshold !== '';
     var hasFailed = opt.dataset.maxFailed !== undefined && opt.dataset.maxFailed !== '';
     var g = parseFloat(gwa.value);

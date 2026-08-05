@@ -25,6 +25,18 @@
                placeholder="GWA <= 2.00; no failing grade">
       </label>
       <div class="form-row">
+        <label>Application Start Date
+          <input type="date" name="apply_start"
+                 value="{{ editing.apply_start if editing and editing.apply_start else '' }}">
+          <small class="muted">Blank = open now</small>
+        </label>
+        <label>Application Deadline
+          <input type="date" name="apply_deadline"
+                 value="{{ editing.apply_deadline if editing and editing.apply_deadline else '' }}">
+          <small class="muted">Blank = no deadline</small>
+        </label>
+      </div>
+      <div class="form-row">
         <label>GWA Threshold (1.00-5.00)
           <input type="number" name="gwa_threshold" step="0.01" min="1" max="5"
                  value="{{ editing.gwa_threshold if editing and editing.gwa_threshold is not none else '' }}">
@@ -46,7 +58,7 @@
   <div class="card">
     <h3>Scholarship Programs</h3>
     <table class="table">
-      <thead><tr><th>Code</th><th>Name</th><th>GWA Req</th><th>Max Failed</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Code</th><th>Name</th><th>GWA Req</th><th>Max Failed</th><th>Apply Window</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>
       {% for s in scholarships %}
         <tr>
@@ -54,6 +66,7 @@
           <td>{{ s.name }}</td>
           <td>{{ 'None' if s.gwa_threshold is none else '&le; ' ~ s.gwa_threshold }}</td>
           <td>{{ 'None' if s.max_failed_subjects is none else s.max_failed_subjects }}</td>
+          <td>{% if s.apply_start or s.apply_deadline %}{{ s.apply_start or 'Open' }} &rarr; {{ s.apply_deadline or 'Open' }}{% else %}Anytime{% endif %}</td>
           <td><span class="badge badge-{{ 'ok' if s.is_active else 'pending' }}">{{ 'Active' if s.is_active else 'Inactive' }}</span></td>
           <td>
             <a class="btn btn-sm" href="{{ url_for('coord_scholarships', edit=s.id) }}">Edit</a>

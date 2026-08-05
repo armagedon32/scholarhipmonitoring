@@ -11,6 +11,26 @@
   <div class="card stat"><div class="stat-value stat-bad">{{ stats.at_risk }}</div><div class="stat-label">At-Risk</div></div>
 </div>
 
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h3 style="margin:0;">Scholarship Programs</h3>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('coord_scholarships') }}">+ Add / Manage</a>
+  </div>
+  <table class="table">
+    <thead><tr><th>Name</th><th>Code</th><th>Application Window</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for s in scholarships %}
+      <tr>
+        <td>{{ s.name }}</td>
+        <td>{{ s.code }}</td>
+        <td>{% if s.apply_start or s.apply_deadline %}{{ s.apply_start or 'Open' }} &rarr; {{ s.apply_deadline or 'Open' }}{% else %}Anytime{% endif %}</td>
+        <td><span class="badge badge-{{ 'ok' if s.is_active else 'pending' }}">{{ 'Active' if s.is_active else 'Inactive' }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 <div class="grid">
   <div class="card">
     <h3>Recent Applications</h3>

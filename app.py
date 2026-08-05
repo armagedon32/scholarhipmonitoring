@@ -5,6 +5,7 @@ Kolehiyo ng Subic -- research prototype for the doctoral study of
 Catherine Mae A. Figuerrez (La Consolacion University Philippines).
 """
 import csv
+import datetime
 import io
 import os
 import secrets
@@ -131,6 +132,17 @@ def auto_eligibility(gwa, failed, threshold, max_failed):
         return ok
     except TypeError:
         return False
+
+
+def scholarship_window(sch):
+    """Return (is_open, message) based on the application start/deadline dates."""
+    sch = dict(sch)
+    today = datetime.date.today().isoformat()
+    if sch.get("apply_start") and today < sch["apply_start"]:
+        return False, f"Applications open on {sch['apply_start']}"
+    if sch.get("apply_deadline") and today > sch["apply_deadline"]:
+        return False, f"Application deadline passed on {sch['apply_deadline']}"
+    return True, ""
 
 
 def scholarship_row(scholar_id):
@@ -387,6 +399,16 @@ def student_apply():
         if not 1.0 <= gwa <= 5.0:
             flash("GWA must be between 1.00 and 5.00.", "error")
             return redirect(url_for("student_apply"))
+        with get_db() as db:
+            sch = db.execute("SELECT * FROM scholarships WHERE id=? AND is_active=1",
+                             (sch_id,)).fetchone()
+        if sch is None:
+            flash("Selected scholarship is not available.", "error")
+            return redirect(url_for("student_apply"))
+        window_open, window_msg = scholarship_window(sch)
+        if not window_open:
+            flash(f"Cannot apply for {sch['name']}: {window_msg}.", "error")
+            return redirect(url_for("student_apply"))
         # Save uploaded documents beside the database (persists on the Railway volume).
         saved_names = []
         for f in request.files.getlist("document_uploads"):
@@ -407,11 +429,6 @@ def student_apply():
         typed = [d.strip() for d in request.form.get("documents", "").split(",") if d.strip()]
         all_docs = ", ".join(typed + saved_names) if (typed or saved_names) else ""
         with get_db() as db:
-            sch = db.execute("SELECT * FROM scholarships WHERE id=? AND is_active=1",
-                             (sch_id,)).fetchone()
-            if sch is None:
-                flash("Selected scholarship is not available.", "error")
-                return redirect(url_for("student_apply"))
             eligible = auto_eligibility(gwa, failed, sch["gwa_threshold"], sch["max_failed_subjects"])
             if not eligible:
                 flash(
@@ -432,7 +449,12 @@ def student_apply():
                "Your scholarship application has been received and is pending review.", "success")
         flash("Application submitted successfully!", "success")
         return redirect(url_for("student_dashboard"))
-    return render_template("student/apply.html", scholarships=[dict(r) for r in scholarships])
+    sch_list = []
+    for r in scholarships:
+        d = dict(r)
+        d["window_open"], d["window_msg"] = scholarship_window(r)
+        sch_list.append(d)
+    return render_template("student/apply.html", scholarships=sch_list)
 
 
 # --------------------------------------------------------------------------
@@ -528,10 +550,13 @@ def coord_dashboard():
             JOIN users u ON u.id = s.student_id
             LEFT JOIN scholarships sch ON sch.id = s.scholarship_id
             ORDER BY s.risk_score IS NULL, s.risk_score DESC LIMIT 6""").fetchall()
+        scholarships = db.execute(
+            "SELECT * FROM scholarships ORDER BY is_active DESC, name").fetchall()
     return render_template("coordinator/dashboard.html",
                            stats=dict(stats),
                            recent_apps=[dict(r) for r in recent_apps],
-                           recent_scholars=[dict(r) for r in recent_scholars])
+                           recent_scholars=[dict(r) for r in recent_scholars],
+                           scholarships=[dict(r) for r in scholarships])
 
 
 @app.route("/coordinator/applications")
@@ -820,6 +845,8 @@ def coord_scholarships():
         name = request.form.get("name", "").strip()
         description = request.form.get("description", "").strip()
         requirements = request.form.get("requirements", "").strip()
+        apply_start = request.form.get("apply_start", "").strip() or None
+        apply_deadline = request.form.get("apply_deadline", "").strip() or None
         try:
             gwa_raw = request.form.get("gwa_threshold", "").strip()
             failed_raw = request.form.get("max_failed_subjects", "").strip()
@@ -836,17 +863,21 @@ def coord_scholarships():
             with get_db() as db:
                 if sid:
                     db.execute("""UPDATE scholarships SET code=?, name=?, description=?,
-                                  requirements=?, gwa_threshold=?, max_failed_subjects=?
+                                  requirements=?, gwa_threshold=?, max_failed_subjects=?,
+                                  apply_start=?, apply_deadline=?
                                   WHERE id=?""",
                                (code, name, description, requirements,
-                                gwa_threshold, max_failed_subjects, sid))
+                                gwa_threshold, max_failed_subjects,
+                                apply_start, apply_deadline, sid))
                 else:
                     db.execute("""INSERT INTO scholarships
                                   (code, name, description, requirements,
-                                   gwa_threshold, max_failed_subjects, is_active)
-                                  VALUES (?,?,?,?,?,?,1)""",
+                                   gwa_threshold, max_failed_subjects,
+                                   apply_start, apply_deadline, is_active)
+                                  VALUES (?,?,?,?,?,?,?,?,1)""",
                                (code, name, description, requirements,
-                                gwa_threshold, max_failed_subjects))
+                                gwa_threshold, max_failed_subjects,
+                                apply_start, apply_deadline))
             if sid:
                 audit("SCHOLARSHIP_EDIT", f"Scholarship updated: {code}")
                 flash(f"Scholarship {code} updated.", "success")
