@@ -517,6 +517,23 @@ def coord_applications():
     return render_template("coordinator/applications.html", apps=[dict(r) for r in rows])
 
 
+@app.route("/coordinator/applications/clear-pending", methods=["POST"])
+@roles_required("coordinator", "admin")
+def coord_clear_pending():
+    with get_db() as db:
+        rows = db.execute(
+            "SELECT id FROM applications WHERE status='pending'").fetchall()
+        ids = [r["id"] for r in rows]
+        if not ids:
+            flash("No pending applications to clear.", "info")
+            return redirect(url_for("coord_applications"))
+        placeholders = ",".join("?" * len(ids))
+        db.execute(f"DELETE FROM applications WHERE id IN ({placeholders})", ids)
+    audit("CLEAR", f"{g.user['full_name']} cleared {len(ids)} pending application(s)")
+    flash(f"Cleared {len(ids)} pending application(s).", "success")
+    return redirect(url_for("coord_applications"))
+
+
 @app.route("/coordinator/applications/<int:aid>/review", methods=["POST"])
 @roles_required("coordinator", "admin")
 def coord_review(aid):

@@ -105,6 +105,7 @@ body {
 }
 .page-title { margin: 6px 0 18px; font-size: 22px; }
 .page-title small { font-weight: 400; font-size: 14px; }
+.page-actions { display: flex; justify-content: flex-end; gap: 10px; margin: -8px 0 14px; }
 .muted { color: var(--muted); font-size: 13px; }
 .center { text-align: center; }
 .row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }

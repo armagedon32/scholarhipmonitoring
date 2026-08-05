@@ -2,6 +2,12 @@
 {% block title %}Applications Review{% endblock %}
 {% block content %}
 <h1 class="page-title">Scholarship Applications</h1>
+<div class="page-actions">
+  <form method="post" action="{{ url_for('coord_clear_pending') }}"
+        onsubmit="return confirm('Clear all PENDING applications? This cannot be undone.')">
+    <button class="btn btn-danger" type="submit">Clear Pending</button>
+  </form>
+</div>
 <div class="card">
   <table class="table">
     <thead>
