@@ -133,6 +133,7 @@ def scholarship_row(scholar_id):
                    sch.gwa_threshold, sch.max_failed_subjects,
                    a.socio_status, a.gwa AS app_gwa, a.failed_subjects AS app_failed,
                    a.attendance_rate AS app_att, a.units_enrolled AS app_units,
+                   a.annual_income AS app_income,
                    a.year_level AS app_year
             FROM scholars s
             JOIN users u ON u.id = s.student_id
@@ -165,6 +166,7 @@ def feature_row(s):
         "attendance_rate": att,
         "scholarship_type": map_scholarship_type(s.get("sch_code")),
         "socio_status": s.get("socio_status") or "Middle",
+        "annual_income": s.get("app_income") or 250000,
         "semester_performance": sp,
     }
 
@@ -190,6 +192,7 @@ def all_scholars_with_latest():
                    sch.gwa_threshold, sch.max_failed_subjects,
                    a.socio_status, a.gwa AS app_gwa, a.failed_subjects AS app_failed,
                    a.attendance_rate AS app_att, a.units_enrolled AS app_units,
+                   a.annual_income AS app_income,
                    a.year_level AS app_year,
                    a.created_at AS app_submitted, a.reviewed_at AS app_approved
             FROM scholars s

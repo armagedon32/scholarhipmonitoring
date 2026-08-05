@@ -1,45 +1,38 @@
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa <= 2.33 AND attendance_rate <= 55.80 AND units_enrolled <= 17.50 AND attendance_rate <= 49.40 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa <= 2.33 AND attendance_rate <= 55.80 AND units_enrolled <= 17.50 AND attendance_rate > 49.40 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa <= 2.33 AND attendance_rate <= 55.80 AND units_enrolled > 17.50 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa <= 2.33 AND attendance_rate > 55.80 AND gwa <= 2.14 AND units_enrolled <= 15.50 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa <= 2.33 AND attendance_rate > 55.80 AND gwa <= 2.14 AND units_enrolled > 15.50 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa <= 2.33 AND attendance_rate > 55.80 AND gwa > 2.14 AND attendance_rate <= 60.25 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa <= 2.33 AND attendance_rate > 55.80 AND gwa > 2.14 AND attendance_rate > 60.25 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa > 2.33 AND units_enrolled <= 16.50 AND scholarship_type_CHED_GIA <= 0.50 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa > 2.33 AND units_enrolled <= 16.50 AND scholarship_type_CHED_GIA > 0.50 AND semester_performance <= 2.77 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa > 2.33 AND units_enrolled <= 16.50 AND scholarship_type_CHED_GIA > 0.50 AND semester_performance > 2.77 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa > 2.33 AND units_enrolled > 16.50 AND semester_performance <= 2.77 AND socio_status_Middle <= 0.50 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa > 2.33 AND units_enrolled > 16.50 AND semester_performance <= 2.77 AND socio_status_Middle > 0.50 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa > 2.33 AND units_enrolled > 16.50 AND semester_performance > 2.77 AND gwa <= 3.06 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate <= 69.45 AND gwa > 2.33 AND units_enrolled > 16.50 AND semester_performance > 2.77 AND gwa > 3.06 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate > 69.45 AND gwa <= 3.02 AND gwa <= 2.51 AND scholarship_type_Municipal <= 0.50 AND attendance_rate <= 71.15 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate > 69.45 AND gwa <= 3.02 AND gwa <= 2.51 AND scholarship_type_Municipal <= 0.50 AND attendance_rate > 71.15 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate > 69.45 AND gwa <= 3.02 AND gwa <= 2.51 AND scholarship_type_Municipal > 0.50 AND attendance_rate <= 95.10 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate > 69.45 AND gwa <= 3.02 AND gwa <= 2.51 AND scholarship_type_Municipal > 0.50 AND attendance_rate > 95.10 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate > 69.45 AND gwa <= 3.02 AND gwa > 2.51 AND attendance_rate <= 74.40 AND units_enrolled <= 16.50 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate > 69.45 AND gwa <= 3.02 AND gwa > 2.51 AND attendance_rate <= 74.40 AND units_enrolled > 16.50 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate > 69.45 AND gwa <= 3.02 AND gwa > 2.51 AND attendance_rate > 74.40 AND attendance_rate <= 87.35 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate > 69.45 AND gwa <= 3.02 AND gwa > 2.51 AND attendance_rate > 74.40 AND attendance_rate > 87.35 THEN At-Risk
-IF semester_performance <= 3.02 AND attendance_rate > 69.45 AND gwa > 3.02 AND attendance_rate <= 88.10 THEN Retained
-IF semester_performance <= 3.02 AND attendance_rate > 69.45 AND gwa > 3.02 AND attendance_rate > 88.10 THEN At-Risk
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal <= 0.50 AND attendance_rate <= 53.00 AND attendance_rate <= 45.95 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal <= 0.50 AND attendance_rate <= 53.00 AND attendance_rate > 45.95 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal <= 0.50 AND attendance_rate > 53.00 AND failed_subjects <= 0.50 AND attendance_rate <= 54.65 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal <= 0.50 AND attendance_rate > 53.00 AND failed_subjects <= 0.50 AND attendance_rate > 54.65 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal <= 0.50 AND attendance_rate > 53.00 AND failed_subjects > 0.50 AND semester_performance <= 4.31 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal <= 0.50 AND attendance_rate > 53.00 AND failed_subjects > 0.50 AND semester_performance > 4.31 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal > 0.50 AND semester_performance <= 3.50 AND semester_performance <= 3.10 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal > 0.50 AND semester_performance <= 3.50 AND semester_performance > 3.10 AND attendance_rate <= 60.90 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal > 0.50 AND semester_performance <= 3.50 AND semester_performance > 3.10 AND attendance_rate > 60.90 THEN At-Risk
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal > 0.50 AND semester_performance > 3.50 AND failed_subjects <= 2.50 AND gwa <= 4.12 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal > 0.50 AND semester_performance > 3.50 AND failed_subjects <= 2.50 AND gwa > 4.12 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate <= 89.60 AND scholarship_type_Municipal > 0.50 AND semester_performance > 3.50 AND failed_subjects > 2.50 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate > 89.60 AND gwa <= 3.36 AND units_enrolled <= 15.50 AND attendance_rate <= 95.20 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate > 89.60 AND gwa <= 3.36 AND units_enrolled <= 15.50 AND attendance_rate > 95.20 THEN At-Risk
-IF semester_performance > 3.02 AND attendance_rate > 89.60 AND gwa <= 3.36 AND units_enrolled > 15.50 AND attendance_rate <= 92.35 THEN At-Risk
-IF semester_performance > 3.02 AND attendance_rate > 89.60 AND gwa <= 3.36 AND units_enrolled > 15.50 AND attendance_rate > 92.35 THEN At-Risk
-IF semester_performance > 3.02 AND attendance_rate > 89.60 AND gwa > 3.36 AND units_enrolled <= 20.50 AND attendance_rate <= 94.95 AND scholarship_type_Academic <= 0.50 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate > 89.60 AND gwa > 3.36 AND units_enrolled <= 20.50 AND attendance_rate <= 94.95 AND scholarship_type_Academic > 0.50 THEN At-Risk
-IF semester_performance > 3.02 AND attendance_rate > 89.60 AND gwa > 3.36 AND units_enrolled <= 20.50 AND attendance_rate > 94.95 AND gwa <= 3.60 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate > 89.60 AND gwa > 3.36 AND units_enrolled <= 20.50 AND attendance_rate > 94.95 AND gwa > 3.60 THEN Retained
-IF semester_performance > 3.02 AND attendance_rate > 89.60 AND gwa > 3.36 AND units_enrolled > 20.50 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate <= 64.45 AND gwa <= 2.02 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate <= 64.45 AND gwa > 2.02 AND annual_income <= 1107875.50 AND scholarship_type_DOST <= 0.50 AND scholarship_type_CHED_GIA <= 0.50 THEN Retained
+IF gwa <= 3.14 AND attendance_rate <= 64.45 AND gwa > 2.02 AND annual_income <= 1107875.50 AND scholarship_type_DOST <= 0.50 AND scholarship_type_CHED_GIA > 0.50 THEN Retained
+IF gwa <= 3.14 AND attendance_rate <= 64.45 AND gwa > 2.02 AND annual_income <= 1107875.50 AND scholarship_type_DOST > 0.50 THEN Retained
+IF gwa <= 3.14 AND attendance_rate <= 64.45 AND gwa > 2.02 AND annual_income > 1107875.50 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa <= 2.74 AND attendance_rate <= 70.20 AND semester_performance <= 2.62 AND units_enrolled <= 14.50 THEN Retained
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa <= 2.74 AND attendance_rate <= 70.20 AND semester_performance <= 2.62 AND units_enrolled > 14.50 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa <= 2.74 AND attendance_rate <= 70.20 AND semester_performance > 2.62 THEN Retained
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa <= 2.74 AND attendance_rate > 70.20 AND attendance_rate <= 77.10 AND gwa <= 2.49 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa <= 2.74 AND attendance_rate > 70.20 AND attendance_rate <= 77.10 AND gwa > 2.49 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa <= 2.74 AND attendance_rate > 70.20 AND attendance_rate > 77.10 AND units_enrolled <= 13.50 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa <= 2.74 AND attendance_rate > 70.20 AND attendance_rate > 77.10 AND units_enrolled > 13.50 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa > 2.74 AND attendance_rate <= 84.90 AND gwa <= 2.94 AND attendance_rate <= 78.70 THEN Retained
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa > 2.74 AND attendance_rate <= 84.90 AND gwa <= 2.94 AND attendance_rate > 78.70 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa > 2.74 AND attendance_rate <= 84.90 AND gwa > 2.94 AND scholarship_type_DOST <= 0.50 THEN Retained
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa > 2.74 AND attendance_rate <= 84.90 AND gwa > 2.94 AND scholarship_type_DOST > 0.50 THEN Retained
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa > 2.74 AND attendance_rate > 84.90 AND gwa <= 3.06 AND semester_performance <= 3.12 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa > 2.74 AND attendance_rate > 84.90 AND gwa <= 3.06 AND semester_performance > 3.12 THEN At-Risk
+IF gwa <= 3.14 AND attendance_rate > 64.45 AND gwa > 2.74 AND attendance_rate > 84.90 AND gwa > 3.06 THEN At-Risk
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income <= 243537.00 AND annual_income <= 104023.00 AND gwa <= 4.05 AND semester_performance <= 3.73 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income <= 243537.00 AND annual_income <= 104023.00 AND gwa <= 4.05 AND semester_performance > 3.73 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income <= 243537.00 AND annual_income <= 104023.00 AND gwa > 4.05 AND semester_performance <= 4.00 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income <= 243537.00 AND annual_income <= 104023.00 AND gwa > 4.05 AND semester_performance > 4.00 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income <= 243537.00 AND annual_income > 104023.00 AND failed_subjects <= 0.50 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income <= 243537.00 AND annual_income > 104023.00 AND failed_subjects > 0.50 AND units_enrolled <= 13.50 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income <= 243537.00 AND annual_income > 104023.00 AND failed_subjects > 0.50 AND units_enrolled > 13.50 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income > 243537.00 AND annual_income <= 778940.50 AND gwa <= 4.37 AND attendance_rate <= 66.40 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income > 243537.00 AND annual_income <= 778940.50 AND gwa <= 4.37 AND attendance_rate > 66.40 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income > 243537.00 AND annual_income <= 778940.50 AND gwa > 4.37 AND annual_income <= 556294.00 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income > 243537.00 AND annual_income <= 778940.50 AND gwa > 4.37 AND annual_income > 556294.00 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income > 243537.00 AND annual_income > 778940.50 AND semester_performance <= 3.69 AND gwa <= 3.58 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income > 243537.00 AND annual_income > 778940.50 AND semester_performance <= 3.69 AND gwa > 3.58 THEN At-Risk
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income > 243537.00 AND annual_income > 778940.50 AND semester_performance > 3.69 AND gwa <= 4.48 THEN Retained
+IF gwa > 3.14 AND attendance_rate <= 95.50 AND annual_income > 243537.00 AND annual_income > 778940.50 AND semester_performance > 3.69 AND gwa > 4.48 THEN Retained
+IF gwa > 3.14 AND attendance_rate > 95.50 AND semester_performance <= 3.47 THEN At-Risk
+IF gwa > 3.14 AND attendance_rate > 95.50 AND semester_performance > 3.47 AND attendance_rate <= 96.05 THEN At-Risk
+IF gwa > 3.14 AND attendance_rate > 95.50 AND semester_performance > 3.47 AND attendance_rate > 96.05 AND semester_performance <= 3.77 THEN Retained
+IF gwa > 3.14 AND attendance_rate > 95.50 AND semester_performance > 3.47 AND attendance_rate > 96.05 AND semester_performance > 3.77 THEN Retained

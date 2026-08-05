@@ -5,6 +5,7 @@
     "failed_subjects",
     "units_enrolled",
     "attendance_rate",
+    "annual_income",
     "semester_performance",
     "scholarship_type_Academic",
     "scholarship_type_CHED_GIA",
@@ -18,22 +19,22 @@
   "selected_algorithm": "Decision Tree",
   "metrics": {
     "Decision Tree": {
-      "accuracy": 0.8667,
-      "precision": 0.9573,
-      "recall": 0.855,
-      "f1_score": 0.9032,
-      "error_rate": 0.1333,
-      "cv_f1_10fold": 0.8993,
+      "accuracy": 0.8778,
+      "precision": 0.9132,
+      "recall": 0.9202,
+      "f1_score": 0.9167,
+      "error_rate": 0.1222,
+      "cv_f1_10fold": 0.9059,
       "meets_85_acc": true,
       "meets_80_f1": true
     },
     "Logistic Regression": {
-      "accuracy": 0.8278,
-      "precision": 0.9673,
-      "recall": 0.7901,
-      "f1_score": 0.8697,
-      "error_rate": 0.1722,
-      "cv_f1_10fold": 0.8774,
+      "accuracy": 0.8417,
+      "precision": 0.9402,
+      "recall": 0.8365,
+      "f1_score": 0.8853,
+      "error_rate": 0.1583,
+      "cv_f1_10fold": 0.867,
       "meets_85_acc": false,
       "meets_80_f1": true
     }
@@ -41,7 +42,7 @@
   "feature_importance": [
     [
       "units_enrolled",
-      0.028
+      0.0127
     ],
     [
       "socio_status_Upper-Middle",
@@ -49,7 +50,7 @@
     ],
     [
       "socio_status_Middle",
-      0.0049
+      0.0
     ],
     [
       "socio_status_Lower-Middle",
@@ -61,35 +62,39 @@
     ],
     [
       "semester_performance",
-      0.4228
+      0.0487
     ],
     [
       "scholarship_type_Municipal",
-      0.0064
-    ],
-    [
-      "scholarship_type_DOST",
       0.0
     ],
     [
+      "scholarship_type_DOST",
+      0.0103
+    ],
+    [
       "scholarship_type_CHED_GIA",
-      0.0008
+      0.0033
     ],
     [
       "scholarship_type_Academic",
-      0.0053
+      0.0
     ],
     [
       "gwa",
-      0.1442
+      0.5773
     ],
     [
       "failed_subjects",
-      0.0067
+      0.0018
     ],
     [
       "attendance_rate",
-      0.3807
+      0.3144
+    ],
+    [
+      "annual_income",
+      0.0315
     ]
   ]
 }

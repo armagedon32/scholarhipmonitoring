@@ -23,12 +23,20 @@ from ml.prep import CATEGORY_LEVELS, build_columns, df_to_matrix
 
 def generate_dataset(n=1800, seed=42, label_noise=0.07):
     rng = random.Random(seed)
+    income_bounds = {
+        "Low": (40000, 120000),
+        "Lower-Middle": (120000, 250000),
+        "Middle": (250000, 500000),
+        "Upper-Middle": (500000, 1200000),
+    }
     rows = []
     for _ in range(n):
         scholarship_type = rng.choice(CATEGORY_LEVELS["scholarship_type"])
         socio_status = rng.choice(CATEGORY_LEVELS["socio_status"])
         units_enrolled = rng.randint(12, 21)
         attendance_rate = round(rng.uniform(45, 100), 1)
+        lo, hi = income_bounds[socio_status]
+        annual_income = rng.randint(lo, hi)
 
         # Philippine grading: lower GWA is better (1.00 highest, 5.00 fail).
         base_ability = rng.uniform(0.0, 1.0)
@@ -43,9 +51,10 @@ def generate_dataset(n=1800, seed=42, label_noise=0.07):
             1 - fail_prob, fail_prob * 0.5, fail_prob * 0.28,
             fail_prob * 0.15, fail_prob * 0.07])[0]
 
-        # Scholastic pressure by grant type and financial stress by socio status.
+        # Scholastic pressure by grant type and financial stress by socio status + income.
         pressure = {"Academic": 0.15, "DOST": 0.1, "CHED_GIA": 0.05, "Municipal": 0.02}[scholarship_type]
         fin_stress = {"Low": 0.15, "Lower-Middle": 0.08, "Middle": 0.02, "Upper-Middle": 0.0}[socio_status]
+        income_stress = max(0.0, 1.0 - annual_income / 400000.0) * 0.05
 
         # Retention score; retained when positive.
         score = (
@@ -55,6 +64,7 @@ def generate_dataset(n=1800, seed=42, label_noise=0.07):
             + 0.3 * ((units_enrolled - 15) / 6.0)
             - 0.8 * pressure
             - 1.0 * fin_stress
+            - 1.0 * income_stress
         )
         # 1 = Retained (majority), 0 = At-Risk; positive score keeps the grant.
         retained = 0 if score > 0 else 1
@@ -69,6 +79,7 @@ def generate_dataset(n=1800, seed=42, label_noise=0.07):
             "attendance_rate": attendance_rate,
             "scholarship_type": scholarship_type,
             "socio_status": socio_status,
+            "annual_income": annual_income,
             "semester_performance": semester_performance,
             "retained": retained,
         })

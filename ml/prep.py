@@ -2,7 +2,8 @@
 
 The model features mirror the feature-selection table in the manuscript:
 GWA, Failed Subjects, Units Enrolled, Attendance Rate, Scholarship Type,
-Socioeconomic Status, and Semester Performance (Year Level is not used).
+Socioeconomic Status, Annual Family Income, and Semester Performance
+(Year Level is not used).
 """
 import numpy as np
 import pandas as pd
@@ -19,6 +20,7 @@ NUMERIC = [
     "failed_subjects",
     "units_enrolled",
     "attendance_rate",
+    "annual_income",
     "semester_performance",
 ]
 
@@ -32,6 +34,7 @@ def validate_row(row: dict):
     row["failed_subjects"] = int(row.get("failed_subjects") or 0)
     row["units_enrolled"] = int(row.get("units_enrolled") or 15)
     row["attendance_rate"] = float(row.get("attendance_rate") or 90.0)
+    row["annual_income"] = float(row.get("annual_income") or 250000.0)
     row["semester_performance"] = float(row.get("semester_performance") or row["gwa"])
     return row
 
