@@ -9,8 +9,8 @@
       <select name="scholarship_id" required>
         {% for s in scholarships %}
         <option value="{{ s.id }}"
-                data-gwa-threshold="{{ s.gwa_threshold }}"
-                data-max-failed="{{ s.max_failed_subjects }}">{{ s.name }} ({{ s.code }})</option>
+                {% if s.gwa_threshold is not none %}data-gwa-threshold="{{ s.gwa_threshold }}"{% endif %}
+                {% if s.max_failed_subjects is not none %}data-max-failed="{{ s.max_failed_subjects }}"{% endif %}>{{ s.name }} ({{ s.code }})</option>
         {% endfor %}
       </select>
     </label>
@@ -62,17 +62,35 @@
   function check() {
     var opt = sel.selectedOptions[0];
     if (!opt) return;
-    var threshold = parseFloat(opt.dataset.gwaThreshold);
-    var maxFailed = parseInt(opt.dataset.maxFailed, 10);
+    var hasGwa = opt.dataset.gwaThreshold !== undefined && opt.dataset.gwaThreshold !== '';
+    var hasFailed = opt.dataset.maxFailed !== undefined && opt.dataset.maxFailed !== '';
     var g = parseFloat(gwa.value);
     var f = parseInt(failed.value, 10);
-    if (isNaN(g) || isNaN(f)) {
+    if (!hasGwa && !hasFailed) {
+      banner.hidden = false;
+      banner.className = 'flash flash-success';
+      banner.textContent = 'You are eligible for ' + opt.text + '. No academic grade requirement applies.';
+      btn.disabled = false;
+      return;
+    }
+    if (isNaN(g) || (hasFailed && isNaN(f))) {
       banner.hidden = true;
       btn.disabled = false;
       return;
     }
-    var req = 'GWA \u2264 ' + threshold + ' and max ' + maxFailed + ' failed subject(s)';
-    if (g <= threshold && f <= maxFailed) {
+    var reqs = [];
+    var pass = true;
+    if (hasGwa) {
+      var threshold = parseFloat(opt.dataset.gwaThreshold);
+      reqs.push('GWA \u2264 ' + threshold);
+      if (!(g <= threshold)) pass = false;
+    }
+    if (hasFailed) {
+      var maxFailed = parseInt(opt.dataset.maxFailed, 10);
+      reqs.push('max ' + maxFailed + ' failed subject(s)');
+      if (!(f <= maxFailed)) pass = false;
+    }
+    if (pass) {
       banner.hidden = false;
       banner.className = 'flash flash-success';
       banner.textContent = 'You are eligible for ' + opt.text + '. You may submit your application.';
@@ -80,7 +98,7 @@
     } else {
       banner.hidden = false;
       banner.className = 'flash flash-error';
-      banner.textContent = 'Not eligible for ' + opt.text + '. Requirement: ' + req + '. You cannot apply for this scholarship.';
+      banner.textContent = 'Not eligible for ' + opt.text + '. Requirement: ' + reqs.join(' and ') + '. You cannot apply for this scholarship.';
       btn.disabled = true;
     }
   }

@@ -25,8 +25,12 @@
         <td>{{ '\u20b1{:,.0f}'.format(a.annual_income) if a.annual_income is not none else '-' }}</td>
         <td>{{ a.attendance_rate }}%</td>
         <td>
-          {% set meets = a.gwa and a.gwa <= a.gwa_threshold and a.failed_subjects <= a.max_failed_subjects %}
-          <span class="badge badge-{{ 'ok' if meets else 'bad' }}">{{ 'Meets' if meets else 'Does not meet' }}</span>
+          {% if a.gwa_threshold is none and a.max_failed_subjects is none %}
+            <span class="badge badge-ok">No academic req</span>
+          {% else %}
+            {% set meets = a.gwa and a.gwa <= a.gwa_threshold and a.failed_subjects <= a.max_failed_subjects %}
+            <span class="badge badge-{{ 'ok' if meets else 'bad' }}">{{ 'Meets' if meets else 'Does not meet' }}</span>
+          {% endif %}
         </td>
         <td><span class="badge badge-{{ a.status }}">{{ a.status }}</span></td>
         <td>

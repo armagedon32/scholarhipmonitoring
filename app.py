@@ -120,8 +120,15 @@ def map_scholarship_type(code):
 
 
 def auto_eligibility(gwa, failed, threshold, max_failed):
+    """Check eligibility. A None threshold/max_failed means 'no academic requirement'
+    (e.g. LGU scholarship whose only qualification is residency in Zambales)."""
     try:
-        return gwa <= threshold and failed <= max_failed
+        ok = True
+        if threshold is not None:
+            ok = ok and gwa <= threshold
+        if max_failed is not None:
+            ok = ok and failed <= max_failed
+        return ok
     except TypeError:
         return False
 
@@ -814,8 +821,10 @@ def coord_scholarships():
         description = request.form.get("description", "").strip()
         requirements = request.form.get("requirements", "").strip()
         try:
-            gwa_threshold = float(request.form.get("gwa_threshold"))
-            max_failed_subjects = int(request.form.get("max_failed_subjects"))
+            gwa_raw = request.form.get("gwa_threshold", "").strip()
+            failed_raw = request.form.get("max_failed_subjects", "").strip()
+            gwa_threshold = float(gwa_raw) if gwa_raw else None
+            max_failed_subjects = int(failed_raw) if failed_raw else None
         except (TypeError, ValueError):
             flash("Invalid GWA threshold or max failed subjects.", "error")
             return redirect(url_for("coord_scholarships"))

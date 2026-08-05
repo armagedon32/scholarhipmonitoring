@@ -26,12 +26,14 @@
       </label>
       <div class="form-row">
         <label>GWA Threshold (1.00-5.00)
-          <input type="number" name="gwa_threshold" step="0.01" min="1" max="5" required
-                 value="{{ editing.gwa_threshold if editing else '2.50' }}">
+          <input type="number" name="gwa_threshold" step="0.01" min="1" max="5"
+                 value="{{ editing.gwa_threshold if editing and editing.gwa_threshold is not none else '' }}">
+          <small class="muted">Blank = no GWA requirement</small>
         </label>
         <label>Max Failed Subjects
-          <input type="number" name="max_failed_subjects" min="0" max="20" required
-                 value="{{ editing.max_failed_subjects if editing else '0' }}">
+          <input type="number" name="max_failed_subjects" min="0" max="20"
+                 value="{{ editing.max_failed_subjects if editing and editing.max_failed_subjects is not none else '' }}">
+          <small class="muted">Blank = no failed-subject limit</small>
         </label>
       </div>
       <button class="btn btn-primary btn-block" type="submit">
@@ -50,8 +52,8 @@
         <tr>
           <td>{{ s.code }}</td>
           <td>{{ s.name }}</td>
-          <td>&le; {{ s.gwa_threshold }}</td>
-          <td>{{ s.max_failed_subjects }}</td>
+          <td>{{ 'None' if s.gwa_threshold is none else '&le; ' ~ s.gwa_threshold }}</td>
+          <td>{{ 'None' if s.max_failed_subjects is none else s.max_failed_subjects }}</td>
           <td><span class="badge badge-{{ 'ok' if s.is_active else 'pending' }}">{{ 'Active' if s.is_active else 'Inactive' }}</span></td>
           <td>
             <a class="btn btn-sm" href="{{ url_for('coord_scholarships', edit=s.id) }}">Edit</a>
