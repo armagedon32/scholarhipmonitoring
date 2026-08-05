@@ -734,8 +734,10 @@ def coord_export(kind):
     if kind == "roster":
         rows = all_scholars_with_latest()
         return _csv_response("scholar_roster.csv",
-                             ["Scholar", "Scholarship", "Year", "Status"],
-                             [[r["full_name"], r["sch_name"], r["year_level"], r["status"]] for r in rows])
+                             ["Scholar", "Scholarship", "Status",
+                              "Application Submitted", "Application Approved"],
+                             [[r["full_name"], r["sch_name"], r["status"],
+                               r["app_submitted"] or "", r["app_approved"] or ""] for r in rows])
     if kind == "performance":
         rows = all_scholars_with_latest()
         return _csv_response("performance_summary.csv",

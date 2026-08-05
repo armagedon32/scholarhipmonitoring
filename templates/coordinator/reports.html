@@ -22,11 +22,14 @@
   <div class="card">
     <h3>Scholar Roster</h3>
     <table class="table">
-      <thead><tr><th>Scholar</th><th>Scholarship</th><th>Year</th><th>Status</th></tr></thead>
+      <thead><tr><th>Scholar</th><th>Scholarship</th><th>Status</th>
+        <th>Application Submitted</th><th>Application Approved</th></tr></thead>
       <tbody>
       {% for s in scholars %}
-        <tr><td>{{ s.full_name }}</td><td>{{ s.sch_name }}</td><td>{{ s.year_level }}</td>
-          <td><span class="badge badge-{{ s.status }}">{{ s.status }}</span></td></tr>
+        <tr><td>{{ s.full_name }}</td><td>{{ s.sch_name }}</td>
+          <td><span class="badge badge-{{ s.status }}">{{ s.status }}</span></td>
+          <td>{{ s.app_submitted or '-' }}</td>
+          <td>{{ s.app_approved or '-' }}</td></tr>
       {% endfor %}
       </tbody>
     </table>
