@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Scholarships{% endblock %}
+{% block content %}
+<h1 class="page-title">Scholarships Management</h1>
+
+<div class="grid">
+  <div class="card">
+    <h3>{{ 'Edit Scholarship' if editing else 'Add New Scholarship' }}</h3>
+    <form method="post" class="form">
+      {% if editing %}<input type="hidden" name="scholarship_id" value="{{ editing.id }}">{% endif %}
+      <div class="form-row">
+        <label>Code
+          <input type="text" name="code" required value="{{ editing.code if editing else '' }}"
+                 placeholder="KnS-ACAD">
+        </label>
+        <label>Name
+          <input type="text" name="name" required value="{{ editing.name if editing else '' }}">
+        </label>
+      </div>
+      <label>Description
+        <input type="text" name="description" value="{{ editing.description if editing else '' }}">
+      </label>
+      <label>Requirements
+        <input type="text" name="requirements" value="{{ editing.requirements if editing else '' }}"
+               placeholder="GWA <= 2.00; no failing grade">
+      </label>
+      <div class="form-row">
+        <label>GWA Threshold (1.00-5.00)
+          <input type="number" name="gwa_threshold" step="0.01" min="1" max="5" required
+                 value="{{ editing.gwa_threshold if editing else '2.50' }}">
+        </label>
+        <label>Max Failed Subjects
+          <input type="number" name="max_failed_subjects" min="0" max="20" required
+                 value="{{ editing.max_failed_subjects if editing else '0' }}">
+        </label>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">
+        {{ 'Save Changes' if editing else 'Add Scholarship' }}
+      </button>
+      {% if editing %}<a class="btn btn-ghost btn-block" href="{{ url_for('coord_scholarships') }}">Cancel</a>{% endif %}
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Scholarship Programs</h3>
+    <table class="table">
+      <thead><tr><th>Code</th><th>Name</th><th>GWA Req</th><th>Max Failed</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for s in scholarships %}
+        <tr>
+          <td>{{ s.code }}</td>
+          <td>{{ s.name }}</td>
+          <td>&le; {{ s.gwa_threshold }}</td>
+          <td>{{ s.max_failed_subjects }}</td>
+          <td><span class="badge badge-{{ 'ok' if s.is_active else 'pending' }}">{{ 'Active' if s.is_active else 'Inactive' }}</span></td>
+          <td>
+            <a class="btn btn-sm" href="{{ url_for('coord_scholarships', edit=s.id) }}">Edit</a>
+            <form method="post" class="inline-form" style="display:inline">
+              <input type="hidden" name="action" value="toggle">
+              <input type="hidden" name="scholarship_id" value="{{ s.id }}">
+              <button class="btn btn-sm {{ 'btn-danger' if s.is_active else 'btn-ok' }}" type="submit">
+                {{ 'Deactivate' if s.is_active else 'Activate' }}
+              </button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

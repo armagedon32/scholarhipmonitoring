@@ -279,6 +279,7 @@ def inject_globals():
         "faculty": ("faculty_dashboard", "faculty_scholars", "faculty_scholar"),
         "apps": ("coord_applications",),
         "scholars": ("coord_scholars", "coord_scholar_detail", "coord_scholar_predict"),
+        "scholarships": ("coord_scholarships",),
         "predictions": ("coord_predictions",),
         "reports": ("coord_reports",),
         "model": ("coord_model",),
@@ -765,6 +766,74 @@ def coord_users():
     with get_db() as db:
         rows = db.execute("SELECT id, username, full_name, email, role, is_active FROM users ORDER BY role, id").fetchall()
     return render_template("coordinator/users.html", users=[dict(r) for r in rows])
+
+
+@app.route("/coordinator/scholarships", methods=["GET", "POST"])
+@roles_required("coordinator", "admin")
+def coord_scholarships():
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "toggle":
+            sid = int(request.form.get("scholarship_id", 0))
+            with get_db() as db:
+                row = db.execute(
+                    "SELECT is_active FROM scholarships WHERE id=?", (sid,)).fetchone()
+                if row is not None:
+                    db.execute("UPDATE scholarships SET is_active=? WHERE id=?",
+                               (1 - row["is_active"], sid))
+            audit("SCHOLARSHIP_TOGGLE", f"Scholarship #{sid} active state toggled")
+            flash("Scholarship availability updated.", "success")
+            return redirect(url_for("coord_scholarships"))
+        code = request.form.get("code", "").strip()
+        name = request.form.get("name", "").strip()
+        description = request.form.get("description", "").strip()
+        requirements = request.form.get("requirements", "").strip()
+        try:
+            gwa_threshold = float(request.form.get("gwa_threshold"))
+            max_failed_subjects = int(request.form.get("max_failed_subjects"))
+        except (TypeError, ValueError):
+            flash("Invalid GWA threshold or max failed subjects.", "error")
+            return redirect(url_for("coord_scholarships"))
+        if not code or not name:
+            flash("Scholarship code and name are required.", "error")
+            return redirect(url_for("coord_scholarships"))
+        sid = request.form.get("scholarship_id")
+        try:
+            with get_db() as db:
+                if sid:
+                    db.execute("""UPDATE scholarships SET code=?, name=?, description=?,
+                                  requirements=?, gwa_threshold=?, max_failed_subjects=?
+                                  WHERE id=?""",
+                               (code, name, description, requirements,
+                                gwa_threshold, max_failed_subjects, sid))
+                else:
+                    db.execute("""INSERT INTO scholarships
+                                  (code, name, description, requirements,
+                                   gwa_threshold, max_failed_subjects, is_active)
+                                  VALUES (?,?,?,?,?,?,1)""",
+                               (code, name, description, requirements,
+                                gwa_threshold, max_failed_subjects))
+            if sid:
+                audit("SCHOLARSHIP_EDIT", f"Scholarship updated: {code}")
+                flash(f"Scholarship {code} updated.", "success")
+            else:
+                audit("SCHOLARSHIP_ADD", f"Scholarship added: {code}")
+                flash(f"Scholarship {code} added.", "success")
+        except Exception:
+            flash("Scholarship code already exists.", "error")
+        return redirect(url_for("coord_scholarships"))
+    with get_db() as db:
+        rows = db.execute(
+            "SELECT * FROM scholarships ORDER BY is_active DESC, code").fetchall()
+    edit_id = request.args.get("edit", type=int)
+    editing = None
+    if edit_id:
+        with get_db() as db:
+            editing = db.execute(
+                "SELECT * FROM scholarships WHERE id=?", (edit_id,)).fetchone()
+    return render_template("coordinator/scholarships.html",
+                           scholarships=[dict(r) for r in rows],
+                           editing=dict(editing) if editing else None)
 
 
 @app.route("/coordinator/audit")
