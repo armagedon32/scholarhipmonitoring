@@ -164,7 +164,6 @@ def feature_row(s):
         "attendance_rate": att,
         "scholarship_type": map_scholarship_type(s.get("sch_code")),
         "socio_status": s.get("socio_status") or "Middle",
-        "year_level": s.get("year_level") or s.get("app_year") or 1,
         "semester_performance": sp,
     }
 

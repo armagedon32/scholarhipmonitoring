@@ -27,7 +27,6 @@ def generate_dataset(n=1800, seed=42, label_noise=0.07):
     for _ in range(n):
         scholarship_type = rng.choice(CATEGORY_LEVELS["scholarship_type"])
         socio_status = rng.choice(CATEGORY_LEVELS["socio_status"])
-        year_level = rng.choice(CATEGORY_LEVELS["year_level"])
         units_enrolled = rng.randint(12, 21)
         attendance_rate = round(rng.uniform(45, 100), 1)
 
@@ -70,7 +69,6 @@ def generate_dataset(n=1800, seed=42, label_noise=0.07):
             "attendance_rate": attendance_rate,
             "scholarship_type": scholarship_type,
             "socio_status": socio_status,
-            "year_level": year_level,
             "semester_performance": semester_performance,
             "retained": retained,
         })

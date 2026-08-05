@@ -13,67 +13,47 @@
     "socio_status_Low",
     "socio_status_Lower-Middle",
     "socio_status_Middle",
-    "socio_status_Upper-Middle",
-    "year_level_1",
-    "year_level_2",
-    "year_level_3",
-    "year_level_4"
+    "socio_status_Upper-Middle"
   ],
   "selected_algorithm": "Decision Tree",
   "metrics": {
     "Decision Tree": {
-      "accuracy": 0.8611,
-      "precision": 0.8982,
-      "recall": 0.9182,
-      "f1_score": 0.9081,
-      "error_rate": 0.1389,
-      "cv_f1_10fold": 0.8953,
+      "accuracy": 0.8667,
+      "precision": 0.9573,
+      "recall": 0.855,
+      "f1_score": 0.9032,
+      "error_rate": 0.1333,
+      "cv_f1_10fold": 0.8993,
       "meets_85_acc": true,
       "meets_80_f1": true
     },
     "Logistic Regression": {
-      "accuracy": 0.8389,
-      "precision": 0.9306,
-      "recall": 0.8476,
-      "f1_score": 0.8872,
-      "error_rate": 0.1611,
-      "cv_f1_10fold": 0.8698,
+      "accuracy": 0.8278,
+      "precision": 0.9673,
+      "recall": 0.7901,
+      "f1_score": 0.8697,
+      "error_rate": 0.1722,
+      "cv_f1_10fold": 0.8774,
       "meets_85_acc": false,
       "meets_80_f1": true
     }
   },
   "feature_importance": [
     [
-      "year_level_4",
-      0.0
-    ],
-    [
-      "year_level_3",
-      0.0
-    ],
-    [
-      "year_level_2",
-      0.0
-    ],
-    [
-      "year_level_1",
-      0.0
-    ],
-    [
       "units_enrolled",
-      0.0078
+      0.028
     ],
     [
       "socio_status_Upper-Middle",
-      0.0058
-    ],
-    [
-      "socio_status_Middle",
       0.0
     ],
     [
+      "socio_status_Middle",
+      0.0049
+    ],
+    [
       "socio_status_Lower-Middle",
-      0.0054
+      0.0
     ],
     [
       "socio_status_Low",
@@ -81,11 +61,11 @@
     ],
     [
       "semester_performance",
-      0.0385
+      0.4228
     ],
     [
       "scholarship_type_Municipal",
-      0.0
+      0.0064
     ],
     [
       "scholarship_type_DOST",
@@ -93,23 +73,23 @@
     ],
     [
       "scholarship_type_CHED_GIA",
-      0.0
+      0.0008
     ],
     [
       "scholarship_type_Academic",
-      0.0
+      0.0053
     ],
     [
       "gwa",
-      0.5506
+      0.1442
     ],
     [
       "failed_subjects",
-      0.0131
+      0.0067
     ],
     [
       "attendance_rate",
-      0.3788
+      0.3807
     ]
   ]
 }

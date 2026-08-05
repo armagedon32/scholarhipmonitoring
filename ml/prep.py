@@ -2,17 +2,16 @@
 
 The model features mirror the feature-selection table in the manuscript:
 GWA, Failed Subjects, Units Enrolled, Attendance Rate, Scholarship Type,
-Socioeconomic Status, Year Level, and Semester Performance.
+Socioeconomic Status, and Semester Performance (Year Level is not used).
 """
 import numpy as np
 import pandas as pd
 
-CATEGORICAL = ["scholarship_type", "socio_status", "year_level"]
+CATEGORICAL = ["scholarship_type", "socio_status"]
 
 CATEGORY_LEVELS = {
     "scholarship_type": ["Academic", "CHED_GIA", "Municipal", "DOST"],
     "socio_status": ["Low", "Lower-Middle", "Middle", "Upper-Middle"],
-    "year_level": [1, 2, 3, 4],
 }
 
 NUMERIC = [
@@ -26,12 +25,6 @@ NUMERIC = [
 
 def validate_row(row: dict):
     """Coerce/normalise a raw input dict into a clean record."""
-    for lvl in CATEGORY_LEVELS["year_level"]:
-        if row.get("year_level") == str(lvl):
-            row["year_level"] = lvl
-    row["year_level"] = int(row.get("year_level") or 1)
-    if row["year_level"] not in CATEGORY_LEVELS["year_level"]:
-        row["year_level"] = 1
     for cat in ("scholarship_type", "socio_status"):
         if row.get(cat) not in CATEGORY_LEVELS[cat]:
             row[cat] = CATEGORY_LEVELS[cat][0]
