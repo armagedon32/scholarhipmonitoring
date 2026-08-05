@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard{% endblock %}
+{% block content %}
+<h1 class="page-title">My Scholar Dashboard</h1>
+
+<div class="grid">
+  <div class="card">
+    <h3>My Scholarship Application</h3>
+    {% if applications %}
+      {% for a in applications %}
+      <div class="row-between">
+        <div>
+          <strong>{{ a.name }}</strong> <small class="muted">({{ a.code }})</small>
+          <div class="muted">Submitted {{ a.created_at }} &middot; GWA {{ a.gwa }} &middot; Failed {{ a.failed_subjects }}</div>
+        </div>
+        <div>
+          <span class="badge badge-{{ a.status }}">{{ a.status }}</span>
+          <span class="badge badge-{{ 'ok' if a.eligibility=='Eligible' else 'bad' }}">{{ a.eligibility }}</span>
+        </div>
+      </div>
+      {% if a.remarks %}<p class="muted">Remarks: {{ a.remarks }}</p>{% endif %}
+      {% endfor %}
+    {% else %}
+      <p class="muted">You have not submitted an application yet.</p>
+    {% endif %}
+    <a class="btn btn-primary" href="{{ url_for('student_apply') }}">Apply for a Scholarship</a>
+  </div>
+
+  <div class="card">
+    <h3>Retention Prediction (My Scholar Record)</h3>
+    {% if scholar %}
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-value {{ 'stat-ok' if scholar.retention_status=='Retained' else 'stat-bad' }}">
+            {{ scholar.retention_status or 'Pending' }}</div>
+          <div class="stat-label">Retention Status</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">{{ scholar.risk_score if scholar.risk_score is not none else '-' }}</div>
+          <div class="stat-label">Risk Score (%)</div>
+        </div>
+      </div>
+      <p class="muted">
+        Predicted using {{ model_name }} ({{ model_metrics.get('accuracy')*100|round(1) }}% accuracy).
+        This is decision-support only; final decisions rest with the Scholarship Coordinator.
+      </p>
+    {% else %}
+      <p class="muted">No active scholar record. You will see your retention prediction once your
+        application is approved and you are enrolled as a scholar.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if scholar and scholar.perf %}
+<div class="card">
+  <h3>Academic Performance Records</h3>
+  <table class="table">
+    <thead><tr><th>Semester</th><th>GWA</th><th>Failed</th><th>Units</th><th>Attendance</th><th>Sem. Perf.</th><th>Entered</th></tr></thead>
+    <tbody>
+    {% for p in scholar.perf %}
+      <tr>
+        <td>{{ p.semester }}</td><td>{{ p.gwa }}</td><td>{{ p.failed_subjects }}</td>
+        <td>{{ p.units_enrolled }}</td><td>{{ p.attendance_rate }}%</td>
+        <td>{{ p.semester_performance }}</td><td class="muted">{{ p.created_at }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

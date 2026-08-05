@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Applications Review{% endblock %}
+{% block content %}
+<h1 class="page-title">Scholarship Applications</h1>
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr><th>ID</th><th>Applicant</th><th>Scholarship</th><th>GWA</th><th>Failed</th>
+          <th>Attend.</th><th>Auto-Check</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    {% for a in apps %}
+      <tr>
+        <td>#{{ a.id }}</td>
+        <td>{{ a.full_name }} <small class="muted">({{ a.year_level }}Y)</small></td>
+        <td>{{ a.sch_name }} <small class="muted">({{ a.sch_code }})</small></td>
+        <td>{{ a.gwa }}</td>
+        <td>{{ a.failed_subjects }}</td>
+        <td>{{ a.attendance_rate }}%</td>
+        <td>
+          {% set meets = a.gwa and a.gwa <= a.gwa_threshold and a.failed_subjects <= a.max_failed_subjects %}
+          <span class="badge badge-{{ 'ok' if meets else 'bad' }}">{{ 'Meets' if meets else 'Does not meet' }}</span>
+        </td>
+        <td><span class="badge badge-{{ a.status }}">{{ a.status }}</span></td>
+        <td>
+          {% if a.status == 'pending' %}
+          <details class="inline-details">
+            <summary class="btn btn-sm">Review</summary>
+            <form method="post" action="{{ url_for('coord_review', aid=a.id) }}" class="form inline-form">
+              <label>Remarks <input type="text" name="remarks"></label>
+              <button class="btn btn-sm btn-ok" name="decision" value="approved">Approve</button>
+              <button class="btn btn-sm btn-danger" name="decision" value="rejected">Reject</button>
+            </form>
+          </details>
+          {% else %}
+            <small class="muted">by {{ a.reviewed_at }}</small>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

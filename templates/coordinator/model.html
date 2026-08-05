@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Retention Model{% endblock %}
+{% block content %}
+<h1 class="page-title">Retention Prediction Model</h1>
+
+<div class="card">
+  <h3>Selected Algorithm: {{ selected }}</h3>
+  <p class="muted">Chosen by balanced F1-score. Decision Tree was selected for integration because it
+    combines strong predictive performance with interpretable decision rules (Information Gain / Entropy).</p>
+  <div class="grid grid-4">
+    <div class="stat"><div class="stat-value">{{ (metrics.get('accuracy',0)*100)|round(1) }}%</div><div class="stat-label">Accuracy</div></div>
+    <div class="stat"><div class="stat-value">{{ metrics.get('precision') }}</div><div class="stat-label">Precision</div></div>
+    <div class="stat"><div class="stat-value">{{ metrics.get('recall') }}</div><div class="stat-label">Recall</div></div>
+    <div class="stat"><div class="stat-value">{{ metrics.get('f1_score') }}</div><div class="stat-label">F1-Score</div></div>
+  </div>
+  <div class="grid grid-4">
+    <div class="stat"><div class="stat-value">{{ (metrics.get('error_rate',0)*100)|round(1) }}%</div><div class="stat-label">Error Rate</div></div>
+    <div class="stat"><div class="stat-value">{{ metrics.get('cv_f1_10fold') }}</div><div class="stat-label">10-fold CV F1</div></div>
+    <div class="stat"><div class="stat-value {{ 'stat-ok' if metrics.get('meets_85_acc') else 'stat-bad' }}">
+      {{ 'Achieved' if metrics.get('meets_85_acc') else 'Not met' }}</div><div class="stat-label">Accuracy &ge; 85%</div></div>
+    <div class="stat"><div class="stat-value {{ 'stat-ok' if metrics.get('meets_80_f1') else 'stat-bad' }}">
+      {{ 'Achieved' if metrics.get('meets_80_f1') else 'Not met' }}</div><div class="stat-label">F1 &ge; 0.80</div></div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Feature Importance</h3>
+    <table class="table">
+      <thead><tr><th>Feature</th><th>Importance</th><th></th></tr></thead>
+      <tbody>
+      {% for name, val in importance %}
+        <tr>
+          <td>{{ name }}</td>
+          <td>{{ val }}</td>
+          <td style="width:40%"><div class="risk-bar"><div class="risk-fill" style="width:{{ (val/0.6*100)|int }}%"></div></div></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="muted">Based on {{ selected }}. GWA, failed subjects and attendance rate are the
+      strongest predictors, consistent with the study's feature-selection findings.</p>
+  </div>
+
+  <div class="card">
+    <h3>Interpretable Decision Rules</h3>
+    {% if rules %}
+      <ol class="rules">
+        {% for r in rules %}<li><code>{{ r }}</code></li>{% endfor %}
+      </ol>
+      <p class="muted">First {{ rules|length }} of {{ 'generated' }} rules from the trained decision tree.
+        These rules support the "right to explanation" for retention decisions.</p>
+    {% else %}
+      <p class="muted">No rules exported.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

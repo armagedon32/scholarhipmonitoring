@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ code }}{% endblock %}
+{% block content %}
+<div class="card card-narrow center">
+  <div class="error-code">{{ code }}</div>
+  <h2>{% if code == 403 %}Access Denied{% else %}Page Not Found{% endif %}</h2>
+  <p>{{ message }}</p>
+  <a class="btn btn-primary" href="{{ url_for('home') }}">Go to Dashboard</a>
+</div>
+{% endblock %}

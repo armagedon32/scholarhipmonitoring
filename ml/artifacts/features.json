@@ -1,0 +1,115 @@
+{
+  "model": "retention_model.joblib",
+  "columns": [
+    "gwa",
+    "failed_subjects",
+    "units_enrolled",
+    "attendance_rate",
+    "semester_performance",
+    "scholarship_type_Academic",
+    "scholarship_type_CHED_GIA",
+    "scholarship_type_Municipal",
+    "scholarship_type_DOST",
+    "socio_status_Low",
+    "socio_status_Lower-Middle",
+    "socio_status_Middle",
+    "socio_status_Upper-Middle",
+    "year_level_1",
+    "year_level_2",
+    "year_level_3",
+    "year_level_4"
+  ],
+  "selected_algorithm": "Decision Tree",
+  "metrics": {
+    "Decision Tree": {
+      "accuracy": 0.8611,
+      "precision": 0.8982,
+      "recall": 0.9182,
+      "f1_score": 0.9081,
+      "error_rate": 0.1389,
+      "cv_f1_10fold": 0.8953,
+      "meets_85_acc": true,
+      "meets_80_f1": true
+    },
+    "Logistic Regression": {
+      "accuracy": 0.8389,
+      "precision": 0.9306,
+      "recall": 0.8476,
+      "f1_score": 0.8872,
+      "error_rate": 0.1611,
+      "cv_f1_10fold": 0.8698,
+      "meets_85_acc": false,
+      "meets_80_f1": true
+    }
+  },
+  "feature_importance": [
+    [
+      "year_level_4",
+      0.0
+    ],
+    [
+      "year_level_3",
+      0.0
+    ],
+    [
+      "year_level_2",
+      0.0
+    ],
+    [
+      "year_level_1",
+      0.0
+    ],
+    [
+      "units_enrolled",
+      0.0078
+    ],
+    [
+      "socio_status_Upper-Middle",
+      0.0058
+    ],
+    [
+      "socio_status_Middle",
+      0.0
+    ],
+    [
+      "socio_status_Lower-Middle",
+      0.0054
+    ],
+    [
+      "socio_status_Low",
+      0.0
+    ],
+    [
+      "semester_performance",
+      0.0385
+    ],
+    [
+      "scholarship_type_Municipal",
+      0.0
+    ],
+    [
+      "scholarship_type_DOST",
+      0.0
+    ],
+    [
+      "scholarship_type_CHED_GIA",
+      0.0
+    ],
+    [
+      "scholarship_type_Academic",
+      0.0
+    ],
+    [
+      "gwa",
+      0.5506
+    ],
+    [
+      "failed_subjects",
+      0.0131
+    ],
+    [
+      "attendance_rate",
+      0.3788
+    ]
+  ]
+}

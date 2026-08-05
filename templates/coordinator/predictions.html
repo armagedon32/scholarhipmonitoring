@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Retention Prediction Dashboard{% endblock %}
+{% block content %}
+<h1 class="page-title">Retention Prediction Dashboard</h1>
+
+<div class="grid grid-4">
+  <div class="card stat"><div class="stat-value stat-ok">{{ summary.retained }}</div><div class="stat-label">Retained</div></div>
+  <div class="card stat"><div class="stat-value stat-bad">{{ summary.at_risk }}</div><div class="stat-label">At-Risk</div></div>
+  <div class="card stat"><div class="stat-value stat-warn">{{ summary.pending }}</div><div class="stat-label">Pending</div></div>
+  <div class="card stat"><div class="stat-value">{{ summary.total }}</div><div class="stat-label">Total Scholars</div></div>
+</div>
+
+<div class="card">
+  <div class="row-between">
+    <p class="muted">Classification output of the {{ model_name }} retention model
+      (Accuracy {{ (model_metrics.get('accuracy')*100)|round(1) }}%, F1 {{ model_metrics.get('f1_score') }}).
+      Predictions are decision-support only.</p>
+    <a class="btn btn-primary" href="{{ url_for('coord_predictions', run_all=1) }}">Run Prediction for All</a>
+  </div>
+  <table class="table">
+    <thead>
+      <tr><th>Scholar</th><th>Scholarship</th><th>Year</th><th>GWA</th><th>Failed</th>
+          <th>Attendance</th><th>Retention</th><th>Risk %</th><th>Last Predicted</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for s in scholars %}
+      <tr>
+        <td>{{ s.full_name }}</td>
+        <td>{{ s.sch_name }}</td>
+        <td>{{ s.year_level }}</td>
+        <td>{{ (s.latest_perf or {}).get('gwa', s.app_gwa) }}</td>
+        <td>{{ (s.latest_perf or {}).get('failed_subjects', s.app_failed) }}</td>
+        <td>{{ (s.latest_perf or {}).get('attendance_rate', s.app_att) }}%</td>
+        <td>
+          {% if s.retention_status %}
+            <span class="badge badge-{{ 'ok' if s.retention_status=='Retained' else 'bad' }}">{{ s.retention_status }}</span>
+          {% else %}<span class="badge badge-pending">Pending</span>{% endif %}
+        </td>
+        <td>
+          {% if s.risk_score is not none %}
+            <div class="risk-bar"><div class="risk-fill {{ 'risk-low' if s.risk_score < 40 else 'risk-high' }}" style="width:{{ s.risk_score }}%"></div></div>
+            <small>{{ s.risk_score }}%</small>
+          {% else %}—{% endif %}
+        </td>
+        <td class="muted">{{ s.last_predicted_at or '-' }}</td>
+        <td><a class="btn btn-sm" href="{{ url_for('coord_scholar_detail', scholar_id=s.id) }}">Open</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

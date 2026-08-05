@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ScholarNet{% endblock %} - Kolehiyo ng Subic</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-body">
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="brand-logo">KnS</span>
+    <div>
+      <strong>ScholarNet</strong>
+      <small>Kolehiyo ng Subic</small>
+    </div>
+  </div>
+
+  <nav class="side-nav">
+    {% if user %}
+      {% if user.role == 'student' %}
+        <div class="nav-title">Student</div>
+        <a href="{{ url_for('student_dashboard') }}" class="{{ 'active' if active_section=='student' }}">Dashboard</a>
+        <a href="{{ url_for('student_apply') }}" class="{{ 'active' if request.endpoint=='student_apply' }}">Apply for Scholarship</a>
+      {% elif user.role == 'faculty' %}
+        <div class="nav-title">Faculty</div>
+        <a href="{{ url_for('faculty_dashboard') }}" class="{{ 'active' if active_section=='faculty' and request.endpoint=='faculty_dashboard' }}">Dashboard</a>
+        <a href="{{ url_for('faculty_scholars') }}" class="{{ 'active' if request.endpoint in ('faculty_scholars','faculty_scholar') }}">Scholars</a>
+      {% elif user.role == 'it_expert' %}
+        <div class="nav-title">Evaluation (IT Expert)</div>
+        <a href="{{ url_for('coord_dashboard') }}" class="{{ 'active' if request.endpoint=='coord_dashboard' }}">Dashboard</a>
+        <a href="{{ url_for('coord_applications') }}" class="{{ 'active' if active_section=='apps' }}">Applications</a>
+        <a href="{{ url_for('coord_scholars') }}" class="{{ 'active' if active_section=='scholars' }}">Scholars</a>
+        <a href="{{ url_for('coord_predictions') }}" class="{{ 'active' if active_section=='predictions' }}">Retention Prediction</a>
+        <a href="{{ url_for('coord_reports') }}" class="{{ 'active' if active_section=='reports' }}">Reports</a>
+        <a href="{{ url_for('coord_model') }}" class="{{ 'active' if active_section=='model' }}">Model Insights</a>
+        <a href="{{ url_for('coord_audit') }}" class="{{ 'active' if active_section=='audit' }}">Audit Logs</a>
+      {% else %}
+        <div class="nav-title">Administration</div>
+        <a href="{{ url_for('coord_dashboard') }}" class="{{ 'active' if request.endpoint=='coord_dashboard' }}">Dashboard</a>
+        <a href="{{ url_for('coord_applications') }}" class="{{ 'active' if active_section=='apps' }}">Applications</a>
+        <a href="{{ url_for('coord_scholars') }}" class="{{ 'active' if active_section=='scholars' }}">Scholars</a>
+        <a href="{{ url_for('coord_predictions') }}" class="{{ 'active' if active_section=='predictions' }}">Retention Prediction</a>
+        <a href="{{ url_for('coord_reports') }}" class="{{ 'active' if active_section=='reports' }}">Reports</a>
+        <a href="{{ url_for('coord_model') }}" class="{{ 'active' if active_section=='model' }}">Model Insights</a>
+        <a href="{{ url_for('coord_users') }}" class="{{ 'active' if active_section=='users' }}">Users</a>
+        <a href="{{ url_for('coord_audit') }}" class="{{ 'active' if active_section=='audit' }}">Audit Logs</a>
+      {% endif %}
+
+      <div class="nav-title">General</div>
+      <a href="{{ url_for('notifications') }}" class="{{ 'active' if active_section=='notifications' }}">Notifications
+        {% if unread_count %}<span class="badge badge-count">{{ unread_count }}</span>{% endif %}</a>
+    {% endif %}
+  </nav>
+
+  {% if user %}
+  <div class="sidebar-foot">
+    <span class="pill pill-{{ user.role }}">{{ rolenames[user.role] }}</span>
+    <span class="side-user">{{ user.full_name }}</span>
+  </div>
+  {% endif %}
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">{{ self.title() }}</div>
+    <div class="topbar-right">
+      {% if user %}
+      <a class="bell" href="{{ url_for('notifications') }}">Notifications
+        {% if unread_count %}<span class="badge badge-count">{{ unread_count }}</span>{% endif %}</a>
+      <span class="pill pill-{{ user.role }}">{{ rolenames[user.role] }}</span>
+      <span class="topbar-user">{{ user.full_name }}</span>
+      <a class="btn btn-ghost" href="{{ url_for('logout') }}">Logout</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    Web-Based Scholarship Application and Performance Monitoring Platform with
+    Retention Modeling System Using Classification Algorithms &middot; Kolehiyo ng Subic
+  </footer>
+</div>
+</body>
+</html>

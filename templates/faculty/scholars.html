@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Scholars{% endblock %}
+{% block content %}
+<h1 class="page-title">Scholars</h1>
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr><th>Scholar</th><th>Scholarship</th><th>Year</th><th>Status</th>
+          <th>Retention</th><th>Risk</th><th>Latest GWA</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for s in scholars %}
+      <tr>
+        <td>{{ s.full_name }}</td>
+        <td>{{ s.sch_name }}</td>
+        <td>{{ s.year_level }}</td>
+        <td><span class="badge badge-{{ s.status }}">{{ s.status }}</span></td>
+        <td>
+          {% if s.retention_status %}
+            <span class="badge badge-{{ 'ok' if s.retention_status=='Retained' else 'bad' }}">{{ s.retention_status }}</span>
+          {% else %}<span class="badge badge-pending">Pending</span>{% endif %}
+        </td>
+        <td>{{ s.risk_score if s.risk_score is not none else '-' }}</td>
+        <td>{{ (s.latest_perf or {}).get('gwa', '-') }}</td>
+        <td><a class="btn btn-sm" href="{{ url_for('faculty_scholar', scholar_id=s.id) }}">Open</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

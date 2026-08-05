@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Coordinator Dashboard{% endblock %}
+{% block content %}
+<h1 class="page-title">Scholarship Management Dashboard</h1>
+
+<div class="grid grid-5">
+  <div class="card stat"><div class="stat-value">{{ stats.total_apps }}</div><div class="stat-label">Applications</div></div>
+  <div class="card stat"><div class="stat-value stat-warn">{{ stats.pending_apps }}</div><div class="stat-label">Pending Review</div></div>
+  <div class="card stat"><div class="stat-value stat-ok">{{ stats.approved_apps }}</div><div class="stat-label">Approved</div></div>
+  <div class="card stat"><div class="stat-value">{{ stats.active_scholars }}</div><div class="stat-label">Active Scholars</div></div>
+  <div class="card stat"><div class="stat-value stat-bad">{{ stats.at_risk }}</div><div class="stat-label">At-Risk</div></div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Recent Applications</h3>
+    <table class="table">
+      <thead><tr><th>Applicant</th><th>Scholarship</th><th>GWA</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for a in recent_apps %}
+        <tr><td>{{ a.full_name }}</td><td>{{ a.sch_name }}</td><td>{{ a.gwa }}</td>
+          <td><span class="badge badge-{{ a.status }}">{{ a.status }}</span></td>
+          <td><a class="btn btn-sm" href="{{ url_for('coord_applications') }}">Review</a></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3>At-Risk Scholars (Top)</h3>
+    <table class="table">
+      <thead><tr><th>Scholar</th><th>Risk %</th><th></th></tr></thead>
+      <tbody>
+      {% for s in recent_scholars %}
+        <tr><td>{{ s.full_name }}</td>
+          <td>{% if s.risk_score is not none %}
+                <span class="badge badge-{{ 'ok' if s.retention_status=='Retained' else 'bad' }}">{{ s.risk_score }}%</span>
+              {% else %}—{% endif %}</td>
+          <td><a class="btn btn-sm" href="{{ url_for('coord_scholar_detail', scholar_id=s.id) }}">Open</a></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <a class="btn btn-sm" href="{{ url_for('coord_predictions') }}">Open Retention Dashboard</a>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Broadcast Notification to Students</h3>
+  <form method="post" action="{{ url_for('coord_notify') }}" class="form">
+    <div class="form-row">
+      <label>Title <input type="text" name="title" required></label>
+      <label>Recipients
+        <select name="target">
+          <option value="all">All student-scholars</option>
+          <option value="at_risk">At-risk scholars only</option>
+        </select></label>
+    </div>
+    <label>Message <textarea name="message" rows="2" required></textarea></label>
+    <button class="btn btn-primary" type="submit">Send Notification</button>
+  </form>
+</div>
+{% endblock %}

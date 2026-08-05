@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Faculty Dashboard{% endblock %}
+{% block content %}
+<h1 class="page-title">Faculty Dashboard</h1>
+
+<div class="grid">
+  <div class="card stat">
+    <div class="stat-value">{{ total }}</div>
+    <div class="stat-label">Active Scholars</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value stat-bad">{{ at_risk }}</div>
+    <div class="stat-label">At-Risk Scholars</div>
+  </div>
+  <div class="card">
+    <h3>Quick Actions</h3>
+    <a class="btn btn-primary" href="{{ url_for('faculty_scholars') }}">View Scholars &amp; Enter Grades</a>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Recent Performance Entries</h3>
+  {% if recent %}
+  <table class="table">
+    <thead><tr><th>Scholar</th><th>Scholarship</th><th>Semester</th><th>GWA</th><th>Failed</th><th>Attendance</th><th>Entered</th></tr></thead>
+    <tbody>
+    {% for r in recent %}
+      <tr>
+        <td><a href="{{ url_for('faculty_scholar', scholar_id=r.id) }}">{{ r.full_name }}</a></td>
+        <td>{{ r.sch_name }}</td><td>{{ r.semester }}</td><td>{{ r.gwa }}</td>
+        <td>{{ r.failed_subjects }}</td><td>{{ r.attendance_rate }}%</td><td class="muted">{{ r.created_at }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No performance records yet.</p>{% endif %}
+</div>
+{% endblock %}

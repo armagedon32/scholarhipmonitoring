@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}User Management{% endblock %}
+{% block content %}
+<h1 class="page-title">User Management</h1>
+<div class="grid">
+  <div class="card">
+    <h3>Create User Account</h3>
+    <form method="post" class="form">
+      <label>Full Name <input type="text" name="full_name" required></label>
+      <label>Username <input type="text" name="username" required></label>
+      <div class="form-row">
+        <label>Password <input type="password" name="password" required></label>
+        <label>Role
+          <select name="role">
+            <option value="student">Student</option>
+            <option value="faculty">Faculty</option>
+            <option value="coordinator">Coordinator</option>
+            <option value="it_expert">IT Expert</option>
+            <option value="admin">Admin</option>
+          </select></label>
+      </div>
+      <label>Email <input type="email" name="email"></label>
+      <button class="btn btn-primary" type="submit">Create User</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Existing Users</h3>
+    <table class="table">
+      <thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Active</th></tr></thead>
+      <tbody>
+      {% for u in users %}
+        <tr>
+          <td>{{ u.username }}</td><td>{{ u.full_name }}</td>
+          <td><span class="pill pill-{{ u.role }}">{{ u.role }}</span></td>
+          <td><span class="badge badge-{{ 'ok' if u.is_active else 'bad' }}">{{ 'Yes' if u.is_active else 'No' }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

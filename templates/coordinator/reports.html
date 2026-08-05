@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h1 class="page-title">Reports Module</h1>
+
+<div class="grid">
+  <div class="card">
+    <h3>Applicants List</h3>
+    <table class="table">
+      <thead><tr><th>Applicant</th><th>Scholarship</th><th>Status</th><th>Eligibility</th></tr></thead>
+      <tbody>
+      {% for a in applicants %}
+        <tr><td>{{ a.full_name }}</td><td>{{ a.sch_name }}</td>
+          <td><span class="badge badge-{{ a.status }}">{{ a.status }}</span></td>
+          <td><span class="badge badge-{{ 'ok' if a.eligibility=='Eligible' else 'bad' }}">{{ a.eligibility }}</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <a class="btn btn-sm" href="{{ url_for('coord_export', kind='applicants') }}">Export CSV</a>
+  </div>
+
+  <div class="card">
+    <h3>Scholar Roster</h3>
+    <table class="table">
+      <thead><tr><th>Scholar</th><th>Scholarship</th><th>Year</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for s in scholars %}
+        <tr><td>{{ s.full_name }}</td><td>{{ s.sch_name }}</td><td>{{ s.year_level }}</td>
+          <td><span class="badge badge-{{ s.status }}">{{ s.status }}</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <a class="btn btn-sm" href="{{ url_for('coord_export', kind='roster') }}">Export CSV</a>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Performance Summary</h3>
+    <table class="table">
+      <thead><tr><th>Scholar</th><th>Semester</th><th>GWA</th><th>Failed</th><th>Attendance</th></tr></thead>
+      <tbody>
+      {% for s in scholars %}
+        {% set p = s.latest_perf %}
+        <tr><td>{{ s.full_name }}</td><td>{{ p.semester if p else '-' }}</td>
+          <td>{{ p.gwa if p else '-' }}</td><td>{{ p.failed_subjects if p else '-' }}</td>
+          <td>{{ p.attendance_rate if p else '-' }}%</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <a class="btn btn-sm" href="{{ url_for('coord_export', kind='performance') }}">Export CSV</a>
+  </div>
+
+  <div class="card">
+    <h3>Retention Prediction Report</h3>
+    <table class="table">
+      <thead><tr><th>Scholar</th><th>Retention</th><th>Risk %</th></tr></thead>
+      <tbody>
+      {% for s in scholars %}
+        <tr><td>{{ s.full_name }}</td>
+          <td>{% if s.retention_status %}
+                <span class="badge badge-{{ 'ok' if s.retention_status=='Retained' else 'bad' }}">{{ s.retention_status }}</span>
+              {% else %}<span class="badge badge-pending">Pending</span>{% endif %}</td>
+          <td>{{ s.risk_score if s.risk_score is not none else '-' }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <a class="btn btn-sm" href="{{ url_for('coord_export', kind='retention') }}">Export CSV</a>
+  </div>
+</div>
+{% endblock %}

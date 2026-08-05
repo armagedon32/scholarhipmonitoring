@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ s.full_name }} - Scholar{% endblock %}
+{% block content %}
+<h1 class="page-title">{{ s.full_name }}
+  <small class="muted">Scholar #{{ s.id }} &middot; {{ s.sch_name }}</small></h1>
+
+<div class="grid">
+  <div class="card">
+    <h3>Academic Details</h3>
+    <table class="table">
+      <tr><th>Year Level</th><td>{{ s.year_level }}</td></tr>
+      <tr><th>Scholarship</th><td>{{ s.sch_name }}</td></tr>
+      <tr><th>GWA Threshold</th><td>{{ s.gwa_threshold }}</td></tr>
+      <tr><th>Max Failed Subjects</th><td>{{ s.max_failed_subjects }}</td></tr>
+      <tr><th>Retention Status</th>
+        <td>{% if s.retention_status %}
+              <span class="badge badge-{{ 'ok' if s.retention_status=='Retained' else 'bad' }}">{{ s.retention_status }}</span>
+            {% else %}<span class="badge badge-pending">Pending</span>{% endif %}</td></tr>
+      <tr><th>Risk Score</th><td>{{ s.risk_score if s.risk_score is not none else '-' }}%</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Record Academic Performance</h3>
+    <form method="post" class="form">
+      <label>Semester
+        <select name="semester">
+          <option>1st Semester</option><option>2nd Semester</option><option>Summer</option>
+        </select>
+      </label>
+      <div class="form-row">
+        <label>GWA <input type="number" step="0.01" min="1" max="5" name="gwa" required></label>
+        <label>Failed Subjects <input type="number" min="0" name="failed_subjects" value="0" required></label>
+      </div>
+      <div class="form-row">
+        <label>Units Enrolled <input type="number" min="1" name="units_enrolled" required></label>
+        <label>Attendance % <input type="number" step="0.1" min="0" max="100" name="attendance_rate" required></label>
+      </div>
+      <label>Semester Performance (GWA equivalent)
+        <input type="number" step="0.01" min="1" max="5" name="semester_performance" required></label>
+      <button class="btn btn-primary btn-block" type="submit">Save Performance Record</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Performance History</h3>
+  {% if perf %}
+  <table class="table">
+    <thead><tr><th>Semester</th><th>GWA</th><th>Failed</th><th>Units</th><th>Attendance</th><th>Sem. Perf.</th><th>Entered</th></tr></thead>
+    <tbody>
+    {% for p in perf %}
+      <tr><td>{{ p.semester }}</td><td>{{ p.gwa }}</td><td>{{ p.failed_subjects }}</td>
+        <td>{{ p.units_enrolled }}</td><td>{{ p.attendance_rate }}%</td>
+        <td>{{ p.semester_performance }}</td><td class="muted">{{ p.created_at }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No performance records yet.</p>{% endif %}
+</div>
+{% endblock %}

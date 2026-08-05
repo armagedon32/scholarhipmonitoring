@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ s.full_name }} - Scholar{% endblock %}
+{% block content %}
+<h1 class="page-title">{{ s.full_name }} <small class="muted">Scholar #{{ s.id }}</small></h1>
+
+<div class="grid">
+  <div class="card">
+    <h3>Scholar Profile</h3>
+    <table class="table">
+      <tr><th>Email</th><td>{{ s.email }}</td></tr>
+      <tr><th>Year Level</th><td>{{ s.year_level }}</td></tr>
+      <tr><th>Scholarship</th><td>{{ s.sch_name }} ({{ s.sch_code }})</td></tr>
+      <tr><th>Socioeconomic Status</th><td>{{ s.socio_status }}</td></tr>
+      <tr><th>Status</th><td><span class="badge badge-{{ s.status }}">{{ s.status }}</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Retention Prediction</h3>
+    {% if s.retention_status %}
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-value {{ 'stat-ok' if s.retention_status=='Retained' else 'stat-bad' }}">{{ s.retention_status }}</div>
+          <div class="stat-label">Model Output ({{ model_name }})</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">{{ s.risk_score }}%</div>
+          <div class="stat-label">Risk Score</div>
+        </div>
+      </div>
+      <p class="muted">Last predicted {{ s.last_predicted_at }}. Interpreted by the Scholarship
+        Coordinator; never used as the sole basis for decisions.</p>
+    {% else %}
+      <p class="muted">No prediction yet for this scholar.</p>
+    {% endif %}
+    <a class="btn btn-primary" href="{{ url_for('coord_scholar_predict', scholar_id=s.id) }}">Run Prediction</a>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Academic Performance History</h3>
+  {% if perf %}
+  <table class="table">
+    <thead><tr><th>Semester</th><th>GWA</th><th>Failed</th><th>Units</th><th>Attendance</th><th>Sem. Perf.</th><th>Entered</th></tr></thead>
+    <tbody>
+    {% for p in perf %}
+      <tr><td>{{ p.semester }}</td><td>{{ p.gwa }}</td><td>{{ p.failed_subjects }}</td>
+        <td>{{ p.units_enrolled }}</td><td>{{ p.attendance_rate }}%</td>
+        <td>{{ p.semester_performance }}</td><td class="muted">{{ p.created_at }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No performance records yet.</p>{% endif %}
+</div>
+{% endblock %}

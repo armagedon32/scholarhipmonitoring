@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs{% endblock %}
+{% block content %}
+<h1 class="page-title">Audit Trail</h1>
+<div class="card">
+  <table class="table">
+    <thead><tr><th>When</th><th>User</th><th>Action</th><th>Details</th><th>IP</th></tr></thead>
+    <tbody>
+    {% for l in logs %}
+      <tr>
+        <td class="muted">{{ l.created_at }}</td>
+        <td>{{ l.full_name or l.user_id }}</td>
+        <td><span class="badge badge-pending">{{ l.action }}</span></td>
+        <td>{{ l.details }}</td>
+        <td class="muted">{{ l.ip }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

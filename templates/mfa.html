@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Two-factor verification{% endblock %}
+{% block content %}
+<div class="card card-narrow">
+  <h2>Multi-Factor Authentication</h2>
+  <p>Enter the one-time code shown below to complete sign-in (simulated MFA for this prototype).</p>
+  <div class="otp-code">{{ code }}</div>
+  <form method="post" class="form">
+    <label>6-digit code
+      <input type="text" name="code" inputmode="numeric" maxlength="6" required autofocus>
+    </label>
+    <button class="btn btn-primary btn-block" type="submit">Verify</button>
+  </form>
+</div>
+{% endblock %}

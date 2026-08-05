@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Apply for Scholarship{% endblock %}
+{% block content %}
+<h1 class="page-title">Scholarship Application</h1>
+<div class="card card-narrow">
+  <form method="post" class="form">
+    <label>Scholarship Program
+      <select name="scholarship_id" required>
+        {% for s in scholarships %}
+        <option value="{{ s.id }}">{{ s.name }} ({{ s.code }})</option>
+        {% endfor %}
+      </select>
+    </label>
+    <div class="form-row">
+      <label>GWA (1.00 best - 5.00)
+        <input type="number" name="gwa" step="0.01" min="1" max="5" required>
+      </label>
+      <label>Failed Subjects
+        <input type="number" name="failed_subjects" min="0" max="20" value="0" required>
+      </label>
+    </div>
+    <div class="form-row">
+      <label>Units Enrolled
+        <input type="number" name="units_enrolled" min="1" max="45" required>
+      </label>
+      <label>Attendance Rate (%)
+        <input type="number" name="attendance_rate" step="0.1" min="0" max="100" required>
+      </label>
+    </div>
+    <div class="form-row">
+      <label>Socioeconomic Status
+        <select name="socio_status" required>
+          <option>Low</option><option>Lower-Middle</option><option>Middle</option><option>Upper-Middle</option>
+        </select>
+      </label>
+      <label>Year Level
+        <select name="year_level" required>
+          <option value="1">1st Year</option><option value="2">2nd Year</option>
+          <option value="3">3rd Year</option><option value="4">4th Year</option>
+        </select>
+      </label>
+    </div>
+    <label>Documentary Requirements (filenames, comma-separated)
+      <input type="text" name="documents" placeholder="Grade_Report.pdf, Good_Moral.pdf">
+    </label>
+    <button class="btn btn-primary btn-block" type="submit">Submit Application</button>
+  </form>
+</div>
+{% endblock %}

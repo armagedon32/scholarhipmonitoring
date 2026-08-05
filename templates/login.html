@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in - ScholarNet</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-body">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="brand-logo brand-logo-lg">KnS</div>
+      <h1>ScholarNet</h1>
+      <p>Web-Based Scholarship Application &amp; Performance Monitoring Platform<br>
+         with Retention Modeling System</p>
+      <small>Kolehiyo ng Subic &middot; Graduate Study Prototype</small>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post" class="form">
+      <label>Username
+        <input type="text" name="username" required autofocus placeholder="e.g. coordinator">
+      </label>
+      <label>Password
+        <input type="password" name="password" required placeholder="••••••••">
+      </label>
+      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+
+    <div class="auth-demo">
+      <strong>Demo accounts</strong>
+      <table class="table table-sm">
+        <tr><td>coordinator</td><td>coordinator</td></tr>
+        <tr><td>admin</td><td>admin123</td></tr>
+        <tr><td>faculty</td><td>faculty</td></tr>
+        <tr><td>itexpert</td><td>itexpert</td></tr>
+        <tr><td>stu01</td><td>student</td></tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
