@@ -3,11 +3,14 @@
 {% block content %}
 <h1 class="page-title">Scholarship Application</h1>
 <div class="card card-narrow">
+  <div id="eligibility-banner" class="flash" hidden></div>
   <form method="post" class="form">
     <label>Scholarship Program
       <select name="scholarship_id" required>
         {% for s in scholarships %}
-        <option value="{{ s.id }}">{{ s.name }} ({{ s.code }})</option>
+        <option value="{{ s.id }}"
+                data-gwa-threshold="{{ s.gwa_threshold }}"
+                data-max-failed="{{ s.max_failed_subjects }}">{{ s.name }} ({{ s.code }})</option>
         {% endfor %}
       </select>
     </label>
@@ -46,4 +49,44 @@
     <button class="btn btn-primary btn-block" type="submit">Submit Application</button>
   </form>
 </div>
+
+<script>
+(function () {
+  var sel = document.querySelector('select[name="scholarship_id"]');
+  var gwa = document.querySelector('input[name="gwa"]');
+  var failed = document.querySelector('input[name="failed_subjects"]');
+  var banner = document.getElementById('eligibility-banner');
+  var btn = document.querySelector('button[type="submit"]');
+
+  function check() {
+    var opt = sel.selectedOptions[0];
+    if (!opt) return;
+    var threshold = parseFloat(opt.dataset.gwaThreshold);
+    var maxFailed = parseInt(opt.dataset.maxFailed, 10);
+    var g = parseFloat(gwa.value);
+    var f = parseInt(failed.value, 10);
+    if (isNaN(g) || isNaN(f)) {
+      banner.hidden = true;
+      btn.disabled = false;
+      return;
+    }
+    var req = 'GWA \u2264 ' + threshold + ' and max ' + maxFailed + ' failed subject(s)';
+    if (g <= threshold && f <= maxFailed) {
+      banner.hidden = false;
+      banner.className = 'flash flash-success';
+      banner.textContent = 'You are eligible for ' + opt.text + '. You may submit your application.';
+      btn.disabled = false;
+    } else {
+      banner.hidden = false;
+      banner.className = 'flash flash-error';
+      banner.textContent = 'Not eligible for ' + opt.text + '. Requirement: ' + req + '. You cannot apply for this scholarship.';
+      btn.disabled = true;
+    }
+  }
+  sel.addEventListener('change', check);
+  gwa.addEventListener('input', check);
+  failed.addEventListener('input', check);
+  check();
+})();
+</script>
 {% endblock %}

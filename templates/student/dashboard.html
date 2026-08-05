@@ -5,23 +5,24 @@
 
 <div class="grid">
   <div class="card">
-    <h3>My Scholarship Application</h3>
+      <h3>My Approved Scholarship</h3>
     {% if applications %}
       {% for a in applications %}
       <div class="row-between">
         <div>
           <strong>{{ a.name }}</strong> <small class="muted">({{ a.code }})</small>
-          <div class="muted">Submitted {{ a.created_at }} &middot; GWA {{ a.gwa }} &middot; Failed {{ a.failed_subjects }}</div>
+          <div class="muted">Approved {{ a.reviewed_at }} &middot; GWA {{ a.gwa }} &middot; Failed {{ a.failed_subjects }}</div>
         </div>
         <div>
-          <span class="badge badge-{{ a.status }}">{{ a.status }}</span>
-          <span class="badge badge-{{ 'ok' if a.eligibility=='Eligible' else 'bad' }}">{{ a.eligibility }}</span>
+          <span class="badge badge-approved">{{ a.status }}</span>
+          <span class="badge badge-ok">{{ a.eligibility }}</span>
         </div>
       </div>
       {% if a.remarks %}<p class="muted">Remarks: {{ a.remarks }}</p>{% endif %}
       {% endfor %}
     {% else %}
-      <p class="muted">You have not submitted an application yet.</p>
+      <p class="muted">No approved scholarship yet. You will see your approved application here once it is
+        approved by the Scholarship Coordinator.</p>
     {% endif %}
     <a class="btn btn-primary" href="{{ url_for('student_apply') }}">Apply for a Scholarship</a>
   </div>

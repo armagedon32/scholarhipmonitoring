@@ -333,7 +333,8 @@ def student_dashboard():
         apps = db.execute("""
             SELECT a.*, s.name, s.code FROM applications a
             JOIN scholarships s ON s.id = a.scholarship_id
-            WHERE a.applicant_id=? ORDER BY a.id DESC""", (g.user["id"],)).fetchall()
+            WHERE a.applicant_id=? AND a.status='approved'
+            ORDER BY a.id DESC""", (g.user["id"],)).fetchall()
         scholar = db.execute("""
             SELECT s.*, sch.name AS sch_name, sch.code AS sch_code,
                    sch.gwa_threshold, sch.max_failed_subjects
@@ -380,6 +381,12 @@ def student_apply():
                 flash("Selected scholarship is not available.", "error")
                 return redirect(url_for("student_apply"))
             eligible = auto_eligibility(gwa, failed, sch["gwa_threshold"], sch["max_failed_subjects"])
+            if not eligible:
+                flash(
+                    f"You are not eligible for {sch['name']} based on the scholarship requirements "
+                    f"(GWA <= {sch['gwa_threshold']}, max {sch['max_failed_subjects']} failed subject(s)).",
+                    "error")
+                return redirect(url_for("student_apply"))
             db.execute("""
                 INSERT INTO applications
                 (applicant_id, scholarship_id, gwa, failed_subjects, units_enrolled,
