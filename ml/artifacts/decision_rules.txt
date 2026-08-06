@@ -1,14 +1,10 @@
-IF gwa <= 4.01 AND semester_performance <= 3.20 AND gwa <= 3.04 AND socio_status_Middle <= 0.50 AND gwa <= 2.54 THEN Retained
-IF gwa <= 4.01 AND semester_performance <= 3.20 AND gwa <= 3.04 AND socio_status_Middle <= 0.50 AND gwa > 2.54 THEN Retained
-IF gwa <= 4.01 AND semester_performance <= 3.20 AND gwa <= 3.04 AND socio_status_Middle > 0.50 THEN Retained
-IF gwa <= 4.01 AND semester_performance <= 3.20 AND gwa > 3.04 THEN Retained
-IF gwa <= 4.01 AND semester_performance > 3.20 AND annual_income <= 91985.50 THEN Retained
-IF gwa <= 4.01 AND semester_performance > 3.20 AND annual_income > 91985.50 AND units_enrolled <= 17.50 THEN Retained
-IF gwa <= 4.01 AND semester_performance > 3.20 AND annual_income > 91985.50 AND units_enrolled > 17.50 THEN At-Risk
-IF gwa > 4.01 AND gwa <= 4.64 THEN At-Risk
-IF gwa > 4.01 AND gwa > 4.64 AND attendance_rate <= 86.80 AND units_enrolled <= 18.50 AND attendance_rate <= 81.65 THEN At-Risk
-IF gwa > 4.01 AND gwa > 4.64 AND attendance_rate <= 86.80 AND units_enrolled <= 18.50 AND attendance_rate > 81.65 THEN At-Risk
-IF gwa > 4.01 AND gwa > 4.64 AND attendance_rate <= 86.80 AND units_enrolled > 18.50 THEN At-Risk
-IF gwa > 4.01 AND gwa > 4.64 AND attendance_rate > 86.80 AND socio_status_Lower-Middle <= 0.50 AND semester_performance <= 4.99 THEN At-Risk
-IF gwa > 4.01 AND gwa > 4.64 AND attendance_rate > 86.80 AND socio_status_Lower-Middle <= 0.50 AND semester_performance > 4.99 THEN At-Risk
-IF gwa > 4.01 AND gwa > 4.64 AND attendance_rate > 86.80 AND socio_status_Lower-Middle > 0.50 THEN At-Risk
+IF semester_performance <= 2.00 AND attendance_rate <= 90.50 AND annual_income <= 198250.00 AND annual_income <= 144000.00 THEN Retained
+IF semester_performance <= 2.00 AND attendance_rate <= 90.50 AND annual_income <= 198250.00 AND annual_income > 144000.00 THEN Retained
+IF semester_performance <= 2.00 AND attendance_rate <= 90.50 AND annual_income > 198250.00 THEN Retained
+IF semester_performance <= 2.00 AND attendance_rate > 90.50 AND semester_performance <= 1.00 THEN Retained
+IF semester_performance <= 2.00 AND attendance_rate > 90.50 AND semester_performance > 1.00 AND socio_status_Low <= 0.50 THEN Retained
+IF semester_performance <= 2.00 AND attendance_rate > 90.50 AND semester_performance > 1.00 AND socio_status_Low > 0.50 THEN Retained
+IF semester_performance > 2.00 AND failed_subjects <= 1.50 AND semester_performance <= 2.50 THEN Retained
+IF semester_performance > 2.00 AND failed_subjects <= 1.50 AND semester_performance > 2.50 THEN At-Risk
+IF semester_performance > 2.00 AND failed_subjects > 1.50 AND attendance_rate <= 75.50 THEN At-Risk
+IF semester_performance > 2.00 AND failed_subjects > 1.50 AND attendance_rate > 75.50 THEN At-Risk
