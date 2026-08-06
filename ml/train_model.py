@@ -118,12 +118,27 @@ def generate_history(seed=42, grantees_per_year=140):
     return pd.DataFrame(records)
 
 
+def load_or_generate():
+    """Use the real imported history if present, otherwise generate a 3-year demo set."""
+    if os.path.exists(Config.DATASET_PATH):
+        try:
+            df = pd.read_csv(Config.DATASET_PATH)
+            if "retained" in df.columns and len(df) >= 20:
+                print(f"[data] Using imported history: {len(df)} records from {Config.DATASET_PATH}")
+                return df
+        except Exception as e:
+            print(f"[warn] Could not read {Config.DATASET_PATH} ({e}); regenerating demo data.")
+    df = generate_history()
+    df.to_csv(Config.DATASET_PATH, index=False)
+    print(f"[data] No real history found; generated {len(df)} demo records -> {Config.DATASET_PATH}")
+    return df
+
+
 def train_and_report():
     os.makedirs(Config.MODELS_DIR, exist_ok=True)
     os.makedirs(os.path.dirname(Config.DATASET_PATH), exist_ok=True)
 
-    df = generate_history()
-    df.to_csv(Config.DATASET_PATH, index=False)
+    df = load_or_generate()
 
     columns = build_columns()
     X = df_to_matrix(df, columns)
@@ -214,8 +229,7 @@ def train_and_report():
     _export_rules(rules_model, columns)
 
     print(f"\nBest model: {best_name}  -> saved to {Config.MODELS_DIR}")
-    print(f"Training dataset ({len(df)} records over {len(ACADEMIC_YEARS)} school years) "
-          f"-> saved to {Config.DATASET_PATH}")
+    print(f"Training dataset ({len(df)} records) -> {Config.DATASET_PATH}")
     return artifact
 
 

@@ -782,18 +782,22 @@ def coord_notify():
     return redirect(url_for("coord_dashboard"))
 
 
-def _training_years():
-    """Number of school years in the training dataset (for the model insights page)."""
+def _dataset_info():
+    """Return (records, school_years) of the training dataset, with sensible fallbacks."""
     if os.path.exists(Config.DATASET_PATH):
         try:
             with open(Config.DATASET_PATH, newline="", encoding="utf-8") as fh:
                 reader = csv.DictReader(fh)
-                years = {r.get("academic_year") for r in reader if r.get("academic_year")}
-            if years:
-                return len(years)
+                rows = list(reader)
+            if rows:
+                years = {r.get("academic_year") for r in rows if r.get("academic_year")}
+                years.discard("Historical")
+                if not years:
+                    years = {"3+ years"}
+                return len(rows), len(years)
         except Exception:
             pass
-    return 3
+    return 601, 3
 
 
 @app.route("/coordinator/model")
@@ -810,7 +814,8 @@ def coord_model():
     return render_template("coordinator/model.html",
                            selected=selected, metrics=metrics,
                            importance=importance, rules=rules,
-                           years_trained=_training_years())
+                           record_count=_dataset_info()[0],
+                           years_trained=_dataset_info()[1])
 
 
 @app.route("/coordinator/users", methods=["GET", "POST"])
