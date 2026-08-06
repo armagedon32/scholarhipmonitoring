@@ -16,7 +16,7 @@
     "socio_status_Middle",
     "socio_status_Upper-Middle"
   ],
-  "selected_algorithm": "Random Forest",
+  "selected_algorithm": "Decision Tree",
   "metrics": {
     "Decision Tree": {
       "accuracy": 0.9974,
@@ -25,16 +25,6 @@
       "f1_score": 0.9979,
       "error_rate": 0.0026,
       "cv_f1_10fold": 0.9984,
-      "meets_85_acc": true,
-      "meets_80_f1": true
-    },
-    "Random Forest": {
-      "accuracy": 0.9993,
-      "precision": 0.9989,
-      "recall": 1.0,
-      "f1_score": 0.9995,
-      "error_rate": 0.0007,
-      "cv_f1_10fold": 0.9999,
       "meets_85_acc": true,
       "meets_80_f1": true
     },
@@ -52,7 +42,7 @@
   "feature_importance": [
     [
       "units_enrolled",
-      0.0024
+      0.0
     ],
     [
       "socio_status_Upper-Middle",
@@ -60,7 +50,7 @@
     ],
     [
       "socio_status_Middle",
-      0.0003
+      0.0
     ],
     [
       "socio_status_Lower-Middle",
@@ -68,11 +58,11 @@
     ],
     [
       "socio_status_Low",
-      0.0004
+      0.0
     ],
     [
       "semester_performance",
-      0.2661
+      0.9147
     ],
     [
       "scholarship_type_Municipal",
@@ -92,19 +82,19 @@
     ],
     [
       "gwa",
-      0.2994
+      0.0003
     ],
     [
       "failed_subjects",
-      0.2504
+      0.0825
     ],
     [
       "attendance_rate",
-      0.1757
+      0.0006
     ],
     [
       "annual_income",
-      0.0053
+      0.0019
     ]
   ]
 }

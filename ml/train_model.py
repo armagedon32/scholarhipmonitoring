@@ -146,7 +146,6 @@ def train_and_report():
 
     from sklearn.model_selection import train_test_split, cross_val_score
     from sklearn.tree import DecisionTreeClassifier
-    from sklearn.ensemble import RandomForestClassifier
     from sklearn.linear_model import LogisticRegression
     from sklearn.preprocessing import StandardScaler
     from sklearn.pipeline import make_pipeline
@@ -158,9 +157,6 @@ def train_and_report():
     models = {
         "Decision Tree": DecisionTreeClassifier(
             max_depth=7, min_samples_leaf=10, class_weight="balanced", random_state=42),
-        "Random Forest": RandomForestClassifier(
-            n_estimators=200, max_depth=12, min_samples_leaf=4,
-            class_weight="balanced", random_state=42, n_jobs=-1),
         "Logistic Regression": make_pipeline(
             StandardScaler(),
             LogisticRegression(max_iter=1000, class_weight="balanced", random_state=42)),
@@ -199,7 +195,7 @@ def train_and_report():
     best_model = models[best_name]
 
     inner = best_model.named_steps["logisticregression"] if hasattr(best_model, "named_steps") else best_model
-    if isinstance(inner, (DecisionTreeClassifier, RandomForestClassifier)):
+    if isinstance(inner, DecisionTreeClassifier):
         feats = inner.feature_importances_.tolist()
     else:
         feats = np.abs(inner.coef_[0]).tolist()
