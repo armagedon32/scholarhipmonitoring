@@ -16,85 +16,95 @@
     "socio_status_Middle",
     "socio_status_Upper-Middle"
   ],
-  "selected_algorithm": "Decision Tree",
+  "selected_algorithm": "Logistic Regression",
   "metrics": {
     "Decision Tree": {
-      "accuracy": 0.8778,
-      "precision": 0.9132,
-      "recall": 0.9202,
-      "f1_score": 0.9167,
-      "error_rate": 0.1222,
-      "cv_f1_10fold": 0.9059,
+      "accuracy": 0.8595,
+      "precision": 0.8451,
+      "recall": 0.9091,
+      "f1_score": 0.8759,
+      "error_rate": 0.1405,
+      "cv_f1_10fold": 0.8754,
+      "meets_85_acc": true,
+      "meets_80_f1": true
+    },
+    "Random Forest": {
+      "accuracy": 0.8595,
+      "precision": 0.8769,
+      "recall": 0.8636,
+      "f1_score": 0.8702,
+      "error_rate": 0.1405,
+      "cv_f1_10fold": 0.8872,
       "meets_85_acc": true,
       "meets_80_f1": true
     },
     "Logistic Regression": {
-      "accuracy": 0.8417,
-      "precision": 0.9402,
-      "recall": 0.8365,
-      "f1_score": 0.8853,
-      "error_rate": 0.1583,
-      "cv_f1_10fold": 0.867,
-      "meets_85_acc": false,
+      "accuracy": 0.8843,
+      "precision": 0.9062,
+      "recall": 0.8788,
+      "f1_score": 0.8923,
+      "error_rate": 0.1157,
+      "cv_f1_10fold": 0.8848,
+      "meets_85_acc": true,
       "meets_80_f1": true
     }
   },
   "feature_importance": [
     [
       "units_enrolled",
-      0.0127
+      0.0054
     ],
     [
       "socio_status_Upper-Middle",
-      0.0
+      0.078
     ],
     [
       "socio_status_Middle",
-      0.0
+      0.0317
     ],
     [
       "socio_status_Lower-Middle",
-      0.0
+      0.1119
     ],
     [
       "socio_status_Low",
-      0.0
+      0.0395
     ],
     [
       "semester_performance",
-      0.0487
+      0.4913
     ],
     [
       "scholarship_type_Municipal",
-      0.0
+      0.0404
     ],
     [
       "scholarship_type_DOST",
-      0.0103
+      0.0945
     ],
     [
       "scholarship_type_CHED_GIA",
-      0.0033
+      0.1728
     ],
     [
       "scholarship_type_Academic",
-      0.0
+      0.0449
     ],
     [
       "gwa",
-      0.5773
+      1.8814
     ],
     [
       "failed_subjects",
-      0.0018
+      0.6239
     ],
     [
       "attendance_rate",
-      0.3144
+      0.4574
     ],
     [
       "annual_income",
-      0.0315
+      0.0021
     ]
   ]
 }

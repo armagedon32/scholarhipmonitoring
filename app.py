@@ -782,6 +782,20 @@ def coord_notify():
     return redirect(url_for("coord_dashboard"))
 
 
+def _training_years():
+    """Number of school years in the training dataset (for the model insights page)."""
+    if os.path.exists(Config.DATASET_PATH):
+        try:
+            with open(Config.DATASET_PATH, newline="", encoding="utf-8") as fh:
+                reader = csv.DictReader(fh)
+                years = {r.get("academic_year") for r in reader if r.get("academic_year")}
+            if years:
+                return len(years)
+        except Exception:
+            pass
+    return 3
+
+
 @app.route("/coordinator/model")
 @roles_required("coordinator", "admin", "it_expert")
 def coord_model():
@@ -795,7 +809,8 @@ def coord_model():
             rules = [l for l in fh.read().splitlines() if l.strip()][:40]
     return render_template("coordinator/model.html",
                            selected=selected, metrics=metrics,
-                           importance=importance, rules=rules)
+                           importance=importance, rules=rules,
+                           years_trained=_training_years())
 
 
 @app.route("/coordinator/users", methods=["GET", "POST"])

@@ -5,8 +5,9 @@
 
 <div class="card">
   <h3>Selected Algorithm: {{ selected }}</h3>
-  <p class="muted">Chosen by balanced F1-score. Decision Tree was selected for integration because it
-    combines strong predictive performance with interpretable decision rules (Information Gain / Entropy).</p>
+  <p class="muted">Chosen by balanced F1-score after comparing Decision Tree, Random Forest and
+    Logistic Regression on {{ years_trained }} of scholar history. The rules shown below are
+    interpretable decision rules (Information Gain / Entropy) that explain how the model decides.</p>
   <div class="grid grid-4">
     <div class="stat"><div class="stat-value">{{ (metrics.get('accuracy',0)*100)|round(1) }}%</div><div class="stat-label">Accuracy</div></div>
     <div class="stat"><div class="stat-value">{{ metrics.get('precision') }}</div><div class="stat-label">Precision</div></div>
@@ -48,7 +49,7 @@
       <ol class="rules">
         {% for r in rules %}<li><code>{{ r }}</code></li>{% endfor %}
       </ol>
-      <p class="muted">First {{ rules|length }} of {{ 'generated' }} rules from the trained decision tree.
+      <p class="muted">First {{ rules|length }} rules explaining the {{ selected }} model's decisions.
         These rules support the "right to explanation" for retention decisions.</p>
     {% else %}
       <p class="muted">No rules exported.</p>

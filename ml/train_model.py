@@ -1,13 +1,21 @@
 """Train the retention classification models (KDD: modeling phase).
 
-Generates a realistic synthetic dataset for scholarship recipients at
-Kolehiyo ng Subic, runs 80:20 train/test split with 10-fold cross-validation,
-trains Decision Tree and Logistic Regression, and saves the best model so the
-Flask app can use it for live predictions.
+Generates a realistic 3-school-year history of scholarship recipients at
+Kolehiyo ng Subic (SY 2022-2023, 2023-2024, 2024-2025). Each cohort is tracked
+from the year they entered until they graduate or lose the grant, so the
+resulting dataset has genuine temporal structure (students who go at-risk/drop
+stop appearing in later years). The Retained/At-Risk label is NOT produced by a
+hard-coded if-else rule: it is a stochastic outcome of many interacting factors,
+so the classifiers have to genuinely learn the decision boundary from data.
+
+The script then runs an 80:20 train/test split with 10-fold cross-validation,
+trains Decision Tree, Random Forest and Logistic Regression, selects the best
+model by F1, and saves it for live prediction in the Flask app.
 
 Run:  python -m ml.train_model
 """
 import json
+import math
 import os
 import random
 import sys
@@ -20,77 +28,101 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import Config
 from ml.prep import CATEGORY_LEVELS, build_columns, df_to_matrix
 
+ACADEMIC_YEARS = ["2022-2023", "2023-2024", "2024-2025"]
 
-def generate_dataset(n=1800, seed=42, label_noise=0.07):
+INCOME_BOUNDS = {
+    "Low": (40000, 120000),
+    "Lower-Middle": (120000, 250000),
+    "Middle": (250000, 500000),
+    "Upper-Middle": (500000, 1200000),
+}
+
+SOCIO_WEIGHTS = [0.42, 0.30, 0.20, 0.08]  # Low, Lower-Middle, Middle, Upper-Middle
+SCHOLARSHIP_TYPES = ["Academic", "DOST", "CHED_GIA", "Municipal"]
+
+
+def _sig(x):
+    return 1.0 / (1.0 + math.exp(-x))
+
+
+def generate_history(seed=42, grantees_per_year=140):
+    """Simulate three academic years of scholar cohorts (stochastic outcomes)."""
     rng = random.Random(seed)
-    income_bounds = {
-        "Low": (40000, 120000),
-        "Lower-Middle": (120000, 250000),
-        "Middle": (250000, 500000),
-        "Upper-Middle": (500000, 1200000),
-    }
-    rows = []
-    for _ in range(n):
-        scholarship_type = rng.choice(CATEGORY_LEVELS["scholarship_type"])
-        socio_status = rng.choice(CATEGORY_LEVELS["socio_status"])
-        units_enrolled = rng.randint(12, 21)
-        attendance_rate = round(rng.uniform(45, 100), 1)
-        lo, hi = income_bounds[socio_status]
-        annual_income = rng.randint(lo, hi)
+    records = []
 
-        # Philippine grading: lower GWA is better (1.00 highest, 5.00 fail).
-        base_ability = rng.uniform(0.0, 1.0)
-        gwa = round(4.6 - 2.6 * base_ability + rng.uniform(-0.2, 0.2), 2)
-        gwa = max(1.0, min(4.5, gwa))
-        semester_performance = round(
-            max(1.0, min(4.5, gwa + rng.uniform(-0.3, 0.3))), 2
-        )
+    for entry_year in range(len(ACADEMIC_YEARS)):
+        for _ in range(grantees_per_year):
+            # Latent, time-invariant attributes of the student.
+            ability = rng.gauss(0.0, 1.0)
+            engagement = rng.gauss(0.0, 1.0)
+            student_effect = rng.gauss(0.0, 0.35)
+            socio_status = rng.choices(
+                list(INCOME_BOUNDS), weights=SOCIO_WEIGHTS)[0]
+            scholarship_type = rng.choice(SCHOLARSHIP_TYPES)
+            lo, hi = INCOME_BOUNDS[socio_status]
+            annual_income = rng.randint(lo, hi)
+            fin_stress = {"Low": 0.20, "Lower-Middle": 0.10, "Middle": 0.04,
+                          "Upper-Middle": 0.00}[socio_status]
+            pressure = {"Academic": 0.16, "DOST": 0.12, "CHED_GIA": 0.06,
+                        "Municipal": 0.03}[scholarship_type]
 
-        fail_prob = max(0.0, min(1.0, 0.60 - base_ability - (attendance_rate - 75) / 200))
-        failed_subjects = rng.choices([0, 1, 2, 3, 4], weights=[
-            1 - fail_prob, fail_prob * 0.5, fail_prob * 0.28,
-            fail_prob * 0.15, fail_prob * 0.07])[0]
+            # Track the student year by year until they lose the grant.
+            for year_idx, year in enumerate(range(entry_year, len(ACADEMIC_YEARS))):
+                level_year = year_idx  # 0 = 1st, 1 = 2nd, 2 = 3rd/4th
+                year_drift = 0.12 * level_year  # risk grows in later years
 
-        # Scholastic pressure by grant type and financial stress by socio status + income.
-        pressure = {"Academic": 0.15, "DOST": 0.1, "CHED_GIA": 0.05, "Municipal": 0.02}[scholarship_type]
-        fin_stress = {"Low": 0.15, "Lower-Middle": 0.08, "Middle": 0.02, "Upper-Middle": 0.0}[socio_status]
-        income_stress = max(0.0, 1.0 - annual_income / 400000.0) * 0.05
+                attendance_rate = round(min(100.0, max(40.0,
+                    88.0 + 9.0 * engagement + 5.0 * ability + rng.gauss(0, 6))), 1)
+                gwa = round(min(5.0, max(1.0,
+                    4.55 - 2.45 * ability - 0.15 * engagement
+                    + 1.2 * year_drift + rng.gauss(0, 0.22))), 2)
+                units_enrolled = rng.randint(12, 21)
+                semester_performance = round(min(5.0, max(1.0, gwa + rng.gauss(0, 0.25))), 2)
 
-        # Retention score; retained when positive.
-        score = (
-            -1.5 * (gwa - 2.5)
-            - 1.2 * failed_subjects
-            + 1.5 * ((attendance_rate - 70) / 30.0)
-            + 0.3 * ((units_enrolled - 15) / 6.0)
-            - 0.8 * pressure
-            - 1.0 * fin_stress
-            - 1.0 * income_stress
-        )
-        # 1 = Retained (majority), 0 = At-Risk; positive score keeps the grant.
-        retained = 0 if score > 0 else 1
-        # Simulate imperfect historical records (label noise).
-        if rng.random() < label_noise:
-            retained = 1 - retained
+                fail_rate = max(0.0, 0.02 + (100.0 - attendance_rate) / 320.0
+                                + max(0.0, gwa - 3.0) * 0.18 - 0.04 * ability)
+                failed_subjects = rng.choices([0, 1, 2, 3], weights=[
+                    1 - fail_rate, fail_rate * 0.6, fail_rate * 0.28, fail_rate * 0.12])[0]
 
-        rows.append({
-            "gwa": gwa,
-            "failed_subjects": failed_subjects,
-            "units_enrolled": units_enrolled,
-            "attendance_rate": attendance_rate,
-            "scholarship_type": scholarship_type,
-            "socio_status": socio_status,
-            "annual_income": annual_income,
-            "semester_performance": semester_performance,
-            "retained": retained,
-        })
-    return pd.DataFrame(rows)
+                # Retention is a stochastic outcome of interacting factors, not a threshold.
+                logit = (
+                    2.6
+                    + 1.5 * ability
+                    + 0.05 * (attendance_rate - 85.0)
+                    - 1.7 * (gwa - 2.5)
+                    - 1.4 * failed_subjects
+                    - 0.9 * fin_stress
+                    - 0.6 * pressure
+                    - 0.9 * year_drift
+                    + student_effect
+                )
+                retained = 1 if rng.random() < _sig(logit) else 0
+                if rng.random() < 0.04:  # imperfect historical records
+                    retained = 1 - retained
+
+                records.append({
+                    "academic_year": ACADEMIC_YEARS[year],
+                    "year_level": level_year + 1,
+                    "scholarship_type": scholarship_type,
+                    "socio_status": socio_status,
+                    "annual_income": annual_income,
+                    "gwa": gwa,
+                    "failed_subjects": failed_subjects,
+                    "units_enrolled": units_enrolled,
+                    "attendance_rate": attendance_rate,
+                    "semester_performance": semester_performance,
+                    "retained": retained,
+                })
+                if retained == 0:
+                    break  # lost the grant; no record in the following year
+    return pd.DataFrame(records)
 
 
 def train_and_report():
     os.makedirs(Config.MODELS_DIR, exist_ok=True)
     os.makedirs(os.path.dirname(Config.DATASET_PATH), exist_ok=True)
 
-    df = generate_dataset()
+    df = generate_history()
     df.to_csv(Config.DATASET_PATH, index=False)
 
     columns = build_columns()
@@ -99,7 +131,10 @@ def train_and_report():
 
     from sklearn.model_selection import train_test_split, cross_val_score
     from sklearn.tree import DecisionTreeClassifier
+    from sklearn.ensemble import RandomForestClassifier
     from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.pipeline import make_pipeline
     from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
     X_tr, X_te, y_tr, y_te = train_test_split(
@@ -107,13 +142,16 @@ def train_and_report():
 
     models = {
         "Decision Tree": DecisionTreeClassifier(
-            max_depth=6, min_samples_leaf=8, class_weight="balanced", random_state=42),
-        "Logistic Regression": LogisticRegression(
-            max_iter=2000, class_weight="balanced", random_state=42),
+            max_depth=7, min_samples_leaf=10, class_weight="balanced", random_state=42),
+        "Random Forest": RandomForestClassifier(
+            n_estimators=200, max_depth=12, min_samples_leaf=4,
+            class_weight="balanced", random_state=42, n_jobs=-1),
+        "Logistic Regression": make_pipeline(
+            StandardScaler(),
+            LogisticRegression(max_iter=1000, class_weight="balanced", random_state=42)),
     }
 
     results = {}
-    best = None
     for name, model in models.items():
         cv = cross_val_score(model, X_tr, y_tr, cv=10, scoring="f1").mean()
         model.fit(X_tr, y_tr)
@@ -145,12 +183,12 @@ def train_and_report():
     best_name = max(results, key=lambda n: (results[n]["f1_score"], results[n]["accuracy"]))
     best_model = models[best_name]
 
-    if best_name == "Decision Tree":
-        feats = best_model.feature_importances_.tolist()
+    inner = best_model.named_steps["logisticregression"] if hasattr(best_model, "named_steps") else best_model
+    if isinstance(inner, (DecisionTreeClassifier, RandomForestClassifier)):
+        feats = inner.feature_importances_.tolist()
     else:
-        feats = np.abs(best_model.coef_[0]).tolist()
-    importance = sorted(
-        (f, v) for f, v in zip(columns, feats))[::-1]
+        feats = np.abs(inner.coef_[0]).tolist()
+    importance = sorted((f, v) for f, v in zip(columns, feats))[::-1]
 
     artifact = {
         "model": Config.MODEL_FILENAME,
@@ -163,17 +201,25 @@ def train_and_report():
     with open(os.path.join(Config.MODELS_DIR, Config.FEATURES_FILENAME), "w", encoding="utf-8") as fh:
         json.dump(artifact, fh, indent=2)
 
-    # Export human-readable decision rules for the interpretability view.
-    if best_name == "Decision Tree":
-        _export_rules(best_model, columns)
+    # Interpretability view: if the best model is not itself a single tree, fit a
+    # small Decision Tree as a transparent surrogate so the rules stay explainable.
+    if isinstance(inner, DecisionTreeClassifier):
+        rules_model = inner
+    else:
+        rules_model = DecisionTreeClassifier(
+            max_depth=5, min_samples_leaf=20, class_weight="balanced", random_state=42)
+        rules_model.fit(X_tr, y_tr)
+        print(f"\n[info] best model is {best_name}; exporting interpretable "
+              f"Decision Tree surrogate rules for the explanation view.")
+    _export_rules(rules_model, columns)
 
     print(f"\nBest model: {best_name}  -> saved to {Config.MODELS_DIR}")
+    print(f"Training dataset ({len(df)} records over {len(ACADEMIC_YEARS)} school years) "
+          f"-> saved to {Config.DATASET_PATH}")
     return artifact
 
 
 def _export_rules(tree, columns):
-    import textwrap
-
     def recurse(node, path):
         n = tree.tree_
         if n.children_left[node] == n.children_right[node]:
