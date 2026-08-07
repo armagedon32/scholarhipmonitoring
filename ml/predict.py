@@ -54,5 +54,13 @@ class RetentionModel:
             return self.artifact.get("feature_importance", [])
         return []
 
+    def dataset_count(self):
+        """Number of records the model was trained on (from the saved artifact)."""
+        return self.artifact.get("dataset_count", 0) if self.artifact else 0
+
+    def dataset_years(self):
+        """Distinct school years in the training data (0 if the source had no year info)."""
+        return self.artifact.get("dataset_years", 0) if self.artifact else 0
+
 
 model = RetentionModel()

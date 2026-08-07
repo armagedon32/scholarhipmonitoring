@@ -7,7 +7,7 @@
   <h3>Selected Algorithm: {{ selected }}</h3>
   <p class="muted">Chosen by balanced F1-score after comparing Decision Tree and
     Logistic Regression on {{ record_count }} scholar records
-    {% if years_trained != 1 %} spanning {{ years_trained }} school years{% endif %}.
+    {% if years_trained and years_trained != 1 %} spanning {{ years_trained }} school years{% endif %}.
     The rules shown below are interpretable decision rules (Information Gain / Entropy)
     that explain how the model decides.</p>
   <div class="grid grid-4">

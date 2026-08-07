@@ -118,6 +118,15 @@ def generate_history(seed=42, grantees_per_year=140):
     return pd.DataFrame(records)
 
 
+def _dataset_year_count(df):
+    """Number of distinct academic years in the training data (excluding 'Historical')."""
+    if "academic_year" not in df.columns:
+        return 0
+    years = {str(v).strip() for v in df["academic_year"].dropna().unique()}
+    years.discard("Historical")
+    return len(years)
+
+
 def load_or_generate():
     """Use the real imported history if present, otherwise generate a 3-year demo set."""
     if os.path.exists(Config.DATASET_PATH):
@@ -207,6 +216,9 @@ def train_and_report():
         "selected_algorithm": best_name,
         "metrics": results,
         "feature_importance": [[f, round(float(v), 4)] for f, v in importance],
+        # Dataset metadata, reported on the Model Insights page (works without data/ committed).
+        "dataset_count": int(len(df)),
+        "dataset_years": _dataset_year_count(df),
     }
     joblib.dump(best_model, os.path.join(Config.MODELS_DIR, Config.MODEL_FILENAME))
     with open(os.path.join(Config.MODELS_DIR, Config.FEATURES_FILENAME), "w", encoding="utf-8") as fh:
