@@ -788,14 +788,9 @@ def coord_model():
     selected = model.selected_algorithm()
     metrics = model.metrics().get(selected, {})
     importance = model.feature_importance()
-    rules_path = os.path.join(Config.MODELS_DIR, "decision_rules.txt")
-    rules = []
-    if os.path.exists(rules_path):
-        with open(rules_path, encoding="utf-8") as fh:
-            rules = [l for l in fh.read().splitlines() if l.strip()][:40]
     return render_template("coordinator/model.html",
                            selected=selected, metrics=metrics,
-                           importance=importance, rules=rules,
+                           importance=importance,
                            record_count=model.dataset_count() or 0,
                            years_trained=model.dataset_years() or 0)
 

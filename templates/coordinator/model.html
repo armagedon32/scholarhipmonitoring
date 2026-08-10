@@ -7,9 +7,7 @@
   <h3>Selected Algorithm: {{ selected }}</h3>
   <p class="muted">Chosen by balanced F1-score after comparing Decision Tree and
     Logistic Regression on {{ record_count }} scholar records
-    {% if years_trained and years_trained != 1 %} spanning {{ years_trained }} school years{% endif %}.
-    The rules shown below are interpretable decision rules (Information Gain / Entropy)
-    that explain how the model decides.</p>
+    {% if years_trained and years_trained != 1 %} spanning {{ years_trained }} school years{% endif %}.</p>
   <div class="grid grid-4">
     <div class="stat"><div class="stat-value">{{ (metrics.get('accuracy',0)*100)|round(1) }}%</div><div class="stat-label">Accuracy</div></div>
     <div class="stat"><div class="stat-value">{{ metrics.get('precision') }}</div><div class="stat-label">Precision</div></div>
@@ -43,19 +41,6 @@
     </table>
     <p class="muted">Based on {{ selected }}. GWA, failed subjects and attendance rate are the
       strongest predictors, consistent with the study's feature-selection findings.</p>
-  </div>
-
-  <div class="card">
-    <h3>Interpretable Decision Rules</h3>
-    {% if rules %}
-      <ol class="rules">
-        {% for r in rules %}<li><code>{{ r }}</code></li>{% endfor %}
-      </ol>
-      <p class="muted">First {{ rules|length }} rules explaining the {{ selected }} model's decisions.
-        These rules support the "right to explanation" for retention decisions.</p>
-    {% else %}
-      <p class="muted">No rules exported.</p>
-    {% endif %}
   </div>
 </div>
 {% endblock %}
