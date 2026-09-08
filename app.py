@@ -792,9 +792,10 @@ def coord_model():
     metrics = model.metrics().get(selected, {})
     importance = model.feature_importance()
     cm = model.confusion_matrix()
+    smote = model.smote_info()
     return render_template("coordinator/model.html",
                            selected=selected, metrics=metrics,
-                           importance=importance, cm=cm,
+                           importance=importance, cm=cm, smote=smote,
                            record_count=model.dataset_count() or 0,
                            years_trained=model.dataset_years() or 0)
 

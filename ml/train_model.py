@@ -143,6 +143,14 @@ def load_or_generate():
     return df
 
 
+def _dist(y):
+    """Class distribution of a label vector as {label: count}."""
+    return {
+        "At-Risk (0)": int((y == 0).sum()),
+        "Retained (1)": int((y == 1).sum()),
+    }
+
+
 def train_and_report():
     os.makedirs(Config.MODELS_DIR, exist_ok=True)
     os.makedirs(os.path.dirname(Config.DATASET_PATH), exist_ok=True)
@@ -160,23 +168,53 @@ def train_and_report():
     from sklearn.pipeline import make_pipeline
     from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                                  f1_score, confusion_matrix)
+    from imblearn.over_sampling import SMOTE
+    from imblearn.pipeline import Pipeline as ImbPipeline
 
     X_tr, X_te, y_tr, y_te = train_test_split(
         X, y, test_size=0.20, random_state=42, stratify=y)
 
-    models = {
-        "Decision Tree": DecisionTreeClassifier(
-            max_depth=7, min_samples_leaf=10, class_weight="balanced", random_state=42),
-        "Logistic Regression": make_pipeline(
-            StandardScaler(),
-            LogisticRegression(max_iter=1000, class_weight="balanced", random_state=42)),
+    # Class imbalance handling: SMOTE is applied ONLY to the training set.
+    # The test set is left untouched so evaluation remains unbiased.
+    before = _dist(y_tr)
+    _tmp_bal, y_bal_disp = SMOTE(random_state=42).fit_resample(X_tr, y_tr)
+    after = _dist(y_bal_disp)
+    del _tmp_bal, y_bal_disp
+
+    dt_kwargs = dict(max_depth=7, min_samples_leaf=10, class_weight="balanced", random_state=42)
+    lr_kwargs = dict(max_iter=1000, class_weight="balanced", random_state=42)
+
+    # Baseline models (NO SMOTE) used only to gauge whether SMOTE improves results.
+    baseline_models = {
+        "Decision Tree": DecisionTreeClassifier(**dt_kwargs),
+        "Logistic Regression": make_pipeline(StandardScaler(), LogisticRegression(**lr_kwargs)),
+    }
+
+    # Final models wrapped in a SMOTE pipeline (SMOTE happens inside CV folds and
+    # on the full training set; the test set is never touched by SMOTE).
+    smote_models = {
+        "Decision Tree": ImbPipeline(steps=[
+            ("smote", SMOTE(random_state=42)),
+            ("clf", DecisionTreeClassifier(**dt_kwargs))]),
+        "Logistic Regression": ImbPipeline(steps=[
+            ("smote", SMOTE(random_state=42)),
+            ("scaler", StandardScaler()),
+            ("clf", LogisticRegression(**lr_kwargs))]),
     }
 
     results = {}
-    for name, model in models.items():
-        cv = cross_val_score(model, X_tr, y_tr, cv=10, scoring="f1").mean()
-        model.fit(X_tr, y_tr)
-        pred = model.predict(X_te)
+    effect = {}
+    for name in smote_models:
+        base = baseline_models[name]
+        base.fit(X_tr, y_tr)
+        b_pred = base.predict(X_te)
+        b_acc = accuracy_score(y_te, b_pred)
+        b_f1 = f1_score(y_te, b_pred)
+
+        pipe = smote_models[name]
+        cv = cross_val_score(pipe, X_tr, y_tr, cv=10, scoring="f1").mean()
+        pipe.fit(X_tr, y_tr)
+        pred = pipe.predict(X_te)
         acc = accuracy_score(y_te, pred)
         prec = precision_score(y_te, pred)
         rec = recall_score(y_te, pred)
@@ -195,8 +233,15 @@ def train_and_report():
             "confusion_matrix": {
                 "tp": int(tp), "tn": int(tn), "fp": int(fp), "fn": int(fn),
             },
+            "baseline_accuracy": round(b_acc, 4),
+            "baseline_f1_score": round(b_f1, 4),
         }
-        print(f"\n=== {name} ===")
+        effect[name] = {
+            "baseline_f1": round(b_f1, 4),
+            "smote_f1": round(f1, 4),
+            "improved": f1 > b_f1 + 1e-9,
+        }
+        print(f"\n=== {name} (SMOTE) ===")
         print(f"10-fold CV F1      : {cv:.4f}")
         print(f"Accuracy  (test)   : {acc*100:.2f}%")
         print(f"Precision          : {prec:.4f}")
@@ -204,16 +249,21 @@ def train_and_report():
         print(f"F1-Score           : {f1:.4f}")
         print(f"Error rate         : {err*100:.2f}%")
         print(f"Confusion Matrix   : TN={tn} FP={fp} | FN={fn} TP={tp}")
+        print(f"Baseline (no SMOTE): Acc {b_acc*100:.2f}% | F1 {b_f1:.4f}")
+
+    print(f"\n--- Class distribution (training set only) ---")
+    print(f"Before SMOTE: {before}")
+    print(f"After  SMOTE: {after}")
 
     # Select by F1 (balanced metric), ties broken by accuracy.
     best_name = max(results, key=lambda n: (results[n]["f1_score"], results[n]["accuracy"]))
-    best_model = models[best_name]
+    best_model = smote_models[best_name]
 
-    inner = best_model.named_steps["logisticregression"] if hasattr(best_model, "named_steps") else best_model
-    if isinstance(inner, DecisionTreeClassifier):
-        feats = inner.feature_importances_.tolist()
+    clf = best_model.named_steps["clf"]
+    if isinstance(clf, DecisionTreeClassifier):
+        feats = clf.feature_importances_.tolist()
     else:
-        feats = np.abs(inner.coef_[0]).tolist()
+        feats = np.abs(clf.coef_[0]).tolist()
     importance = sorted((f, v) for f, v in zip(columns, feats))[::-1]
 
     artifact = {
@@ -222,6 +272,14 @@ def train_and_report():
         "selected_algorithm": best_name,
         "metrics": results,
         "feature_importance": [[f, round(float(v), 4)] for f, v in importance],
+        # SMOTE metadata reported on the Model Insights page.
+        "smote": {
+            "applied": True,
+            "target": "At-Risk (0) (minority class)",
+            "before": before,
+            "after": after,
+            "effect": effect,
+        },
         # Dataset metadata, reported on the Model Insights page (works without data/ committed).
         "dataset_count": int(len(df)),
         "dataset_years": _dataset_year_count(df),
@@ -230,13 +288,13 @@ def train_and_report():
     with open(os.path.join(Config.MODELS_DIR, Config.FEATURES_FILENAME), "w", encoding="utf-8") as fh:
         json.dump(artifact, fh, indent=2)
 
-    # Interpretability view: if the best model is not itself a single tree, fit a
-    # small Decision Tree as a transparent surrogate so the rules stay explainable.
-    if isinstance(inner, DecisionTreeClassifier):
-        rules_model = inner
+    # Interpretability view: the tied-in tree clf stays explainable; otherwise fit a
+    # small Decision Tree surrogate so the rules remain readable.
+    if isinstance(clf, DecisionTreeClassifier):
+        rules_model = clf
     else:
-        rules_model = DecisionTreeClassifier(
-            max_depth=5, min_samples_leaf=20, class_weight="balanced", random_state=42)
+        rules_model = DecisionTreeClassifier(max_depth=5, min_samples_leaf=20,
+                                             class_weight="balanced", random_state=42)
         rules_model.fit(X_tr, y_tr)
         print(f"\n[info] best model is {best_name}; exporting interpretable "
               f"Decision Tree surrogate rules for the explanation view.")

@@ -69,6 +69,41 @@
 </div>
 
 <div class="card">
+  <h3>Class Imbalance Handling &mdash; SMOTE</h3>
+  {% if smote %}
+  <p class="muted">The training set is class-imbalanced (more Retained than At-Risk records).
+    To address this, the <strong>Synthetic Minority Oversampling Technique (SMOTE)</strong>
+    is applied <strong>only to the training set</strong> after the 80:20 split, generating
+    synthetic samples for the minority class (<strong>{{ smote.target }}</strong>).
+    The test set is kept unchanged for unbiased evaluation.</p>
+  <table class="table table-sm">
+    <thead><tr><th>Class (Training Set)</th><th>Before SMOTE</th><th>After SMOTE</th></tr></thead>
+    <tbody>
+      {% for label in ['At-Risk (0)', 'Retained (1)'] %}
+      <tr>
+        <td>{{ label }}</td>
+        <td>{{ smote.before.get(label, 0) }}</td>
+        <td>{{ smote.after.get(label, 0) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if smote.effect and smote.effect.get(selected) %}
+    {% set eff = smote.effect.get(selected) %}
+    <p class="muted">SMOTE effect on {{ selected }}: F1-Score
+      {{ eff.baseline_f1 }} (without SMOTE) &rarr; <strong>{{ eff.smote_f1 }}</strong>
+      {% if eff.improved %}(improved){% else %}(no notable change){% endif %}.</p>
+  {% endif %}
+  <p class="muted">Models are retrained using the balanced training dataset, then evaluated
+    on the untouched test set with Accuracy, Precision, Recall, F1-Score, Error Rate, and the
+    confusion matrix.</p>
+  {% else %}
+  <p class="muted">SMOTE information not available in the current model artifact.
+    Retrain the model to generate it.</p>
+  {% endif %}
+</div>
+
+<div class="card">
   <h3>Confusion Matrix (Test Set &mdash; 20% Held Out)</h3>
   {% if cm %}
   <table class="table">

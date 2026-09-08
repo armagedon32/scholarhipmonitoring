@@ -88,6 +88,10 @@ class RetentionModel:
         m = self.metrics().get(self.selected_algorithm(), {})
         return m.get("confusion_matrix") or {}
 
+    def smote_info(self):
+        """Class distribution before/after SMOTE + the effect on the selected model."""
+        return (self.artifact or {}).get("smote", {})
+
     def feature_importance(self):
         if self.artifact:
             return self.artifact.get("feature_importance", [])
