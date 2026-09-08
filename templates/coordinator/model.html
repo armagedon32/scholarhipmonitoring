@@ -4,6 +4,23 @@
 <h1 class="page-title">Retention Prediction Model</h1>
 
 <div class="card">
+  <h3>Dataset Description</h3>
+  <div class="dataset-desc">
+  <p>The dataset contains <strong>{{ record_count }} student records</strong>, with each record
+    representing a scholarship student/performance observation used for retention analysis.
+    The dataset is composed of historical scholar records from the previous scholarship cycles
+    of Kolehiyo ng Subic and primarily captures the following information:</p>
+  <ul>
+    <li><strong>Academic performance</strong> — GWA, number of failed subjects, and units enrolled</li>
+    <li><strong>Attendance</strong> — class attendance rate</li>
+    <li><strong>Scholarship information</strong> — scholarship type or program</li>
+    <li><strong>Socioeconomic information</strong> — socio-economic status and annual family income</li>
+    <li><strong>Retention status</strong> — whether the scholar was retained (1) or at-risk (0) for the period</li>
+  </ul>
+  </div>
+</div>
+
+<div class="card">
   <h3>Selected Algorithm: {{ selected }}</h3>
   <p class="muted">Chosen by balanced F1-score after comparing Decision Tree and
     Logistic Regression on {{ record_count }} scholar records
