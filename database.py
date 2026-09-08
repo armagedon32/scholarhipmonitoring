@@ -100,10 +100,37 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS appeals (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    scholar_id       INTEGER NOT NULL REFERENCES scholars(id),
+    student_id       INTEGER NOT NULL REFERENCES users(id),
+    predicted_status TEXT,
+    reason           TEXT,
+    status           TEXT DEFAULT 'Pending',
+    decision         TEXT,
+    decision_remarks TEXT,
+    reviewed_by      INTEGER REFERENCES users(id),
+    reviewed_at      TEXT,
+    created_at       TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS model_reviews (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    reviewer_id INTEGER NOT NULL REFERENCES users(id),
+    review_type TEXT DEFAULT 'Periodic',
+    metrics     TEXT,
+    verdict     TEXT,
+    next_review TEXT,
+    remarks     TEXT,
+    created_at  TEXT DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_applications_applicant ON applications(applicant_id);
 CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
 CREATE INDEX IF NOT EXISTS idx_perf_scholar ON performance_records(scholar_id);
 CREATE INDEX IF NOT EXISTS idx_notif_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_appeals_scholar ON appeals(scholar_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_reviewer ON model_reviews(reviewer_id);
 """
 
 
@@ -137,6 +164,28 @@ def migrate():
             db.execute("ALTER TABLE scholarships ADD COLUMN apply_start TEXT")
         if "apply_deadline" not in sch_cols:
             db.execute("ALTER TABLE scholarships ADD COLUMN apply_deadline TEXT")
+        # Governance module tables (created by SCHEMA on fresh DBs, add on existing).
+        db.execute("""CREATE TABLE IF NOT EXISTS appeals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            scholar_id INTEGER NOT NULL REFERENCES scholars(id),
+            student_id INTEGER NOT NULL REFERENCES users(id),
+            predicted_status TEXT,
+            reason TEXT,
+            status TEXT DEFAULT 'Pending',
+            decision TEXT,
+            decision_remarks TEXT,
+            reviewed_by INTEGER REFERENCES users(id),
+            reviewed_at TEXT,
+            created_at TEXT DEFAULT (datetime('now')))""")
+        db.execute("""CREATE TABLE IF NOT EXISTS model_reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            reviewer_id INTEGER NOT NULL REFERENCES users(id),
+            review_type TEXT DEFAULT 'Periodic',
+            metrics TEXT,
+            verdict TEXT,
+            next_review TEXT,
+            remarks TEXT,
+            created_at TEXT DEFAULT (datetime('now')))""")
 
 
 def _seed(conn):

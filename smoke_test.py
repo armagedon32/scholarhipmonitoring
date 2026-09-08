@@ -28,6 +28,11 @@ def check_any(label, resp, codes=(200, 302)):
     results.append((label, ok, resp.status_code))
     return resp
 
+def check_contains(label, resp, phrase):
+    ok = phrase in resp.get_data(as_text=True)
+    results.append((label, ok, resp.status_code))
+    return resp
+
 # Public
 check("GET /login", client.get("/"))
 
@@ -122,6 +127,52 @@ check("approve application", client.post(
     data={"decision": "approved", "remarks": "Meets criteria"},
     follow_redirects=True))
 check("predictions after approval", client.get("/coordinator/predictions"))
+
+# AI Governance module: student appeal -> coordinator decision -> review+override logging
+client.get("/logout")
+client.post("/", data={"username": "stu01", "password": "student"}, follow_redirects=True)
+r = client.post("/student/appeal",
+                data={"scholar_id": str(sid), "reason": "I passed all subjects last semester."},
+                follow_redirects=True)
+check("student appeal submit", r)
+client.get("/logout")
+
+client.post("/", data={"username": "coordinator", "password": "coordinator"})
+with client.session_transaction() as sess:
+    code = sess["mfa_code"]
+client.post("/mfa", data={"code": str(code).zfill(6)}, follow_redirects=True)
+r = client.get("/coordinator/governance")
+check("governance page", r)
+check_contains("governance authority", r, "AI Governance Committee")
+check_contains("governance shows pending appeal", r, "Pending")
+check_contains("governance workflow", r, "Human Validation")
+with get_db() as db:
+    appeal_id = db.execute(
+        "SELECT id FROM appeals WHERE scholar_id=? ORDER BY id DESC LIMIT 1", (sid,)).fetchone()["id"]
+r = client.post(f"/coordinator/governance/appeal/{appeal_id}",
+                data={"decision": "Overridden", "override_status": "Retained",
+                      "remarks": "Verified passing grades"},
+                follow_redirects=True)
+check("appeal decision", r)
+with get_db() as db:
+    st = db.execute("SELECT retention_status FROM scholars WHERE id=?", (sid,)).fetchone()["retention_status"]
+check("override reflected in scholars", client.get("/coordinator/scholars"), 200) if st == "Retained" else None
+results.append(("appeal override applied", st == "Retained", 200 if st == "Retained" else -1))
+r = client.post("/coordinator/governance",
+                data={"review_type": "Periodic", "verdict": "Compliant",
+                      "next_review": "January 2027", "remarks": "Within targets"},
+                follow_redirects=True)
+check("log model review", r)
+r = client.get("/coordinator/governance")
+check_contains("review listed", r, "Recent Model Reviews (1)")
+r = client.post(f"/coordinator/scholars/{sid}/override",
+                data={"override_status": "At-Risk", "remarks": "Committee decision"},
+                follow_redirects=True)
+check("scholar override", r)
+check_contains("override recorded in audit", client.get("/coordinator/audit"), "PREDICTION_OVERRIDE")
+check_contains("appeal recorded in audit", client.get("/coordinator/audit"), "APPEAL_SUBMIT")
+check_contains("review recorded in audit", client.get("/coordinator/audit"), "MODEL_REVIEW")
+client.get("/logout")
 
 # Access control: student cannot access coordinator page
 client.get("/logout")

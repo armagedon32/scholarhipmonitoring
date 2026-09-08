@@ -24,6 +24,22 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 TARGETS = {"accuracy": 0.85, "f1": 0.80}
+GOVERNANCE = {
+    "committee": "AI Governance Committee",
+    "committee_members": (
+        ("Scholarship Coordinator (Chair)", "Maria Santos"),
+        ("IT Expert", "Engr. Daniel Cruz"),
+        ("Administrator", "Admin User"),
+        ("Data Privacy Officer", "Office of the Administrator"),
+    ),
+    "meeting_schedule": "Monthly (first Friday) and as needed for urgent decisions",
+    "review_schedule": "End of every semester (twice per academic year) after each dataset update",
+    "retrain_threshold": "F1-Score < 0.80 OR Accuracy < 85%",
+    "retrain_policy": ("Model retraining is performed only by authorized personnel (IT Expert or "
+                       "Scholarship Coordinator) after a recorded model review verdict of "
+                       "'Needs Retraining' approved by the AI Governance Committee. Every retraining "
+                       "run is recorded in the Audit Logs with the responsible user, date, and action."),
+}
 ROLENAMES = {
     "student": "Student-Scholar",
     "faculty": "Faculty Member",
@@ -310,6 +326,7 @@ def inject_globals():
         "model": ("coord_model",),
         "dataset": ("coord_dataset", "coord_dataset_upload",
                     "coord_dataset_retrain", "coord_dataset_export"),
+        "governance": ("coord_governance", "coord_appeal_decision"),
         "users": ("coord_users",),
         "audit": ("coord_audit",),
         "notifications": ("notifications",),
@@ -369,16 +386,21 @@ def student_dashboard():
             FROM scholars s LEFT JOIN scholarships sch ON sch.id = s.scholarship_id
             WHERE s.student_id=?""", (g.user["id"],)).fetchone()
     scholar = dict(scholar) if scholar else None
+    appeal = None
     if scholar:
         perf_rows = None
         with get_db() as db:
             perf_rows = db.execute(
                 "SELECT * FROM performance_records WHERE scholar_id=? ORDER BY id DESC",
                 (scholar["id"],)).fetchall()
+            appeal = db.execute(
+                "SELECT * FROM appeals WHERE scholar_id=? ORDER BY id DESC LIMIT 1",
+                (scholar["id"],)).fetchone()
         scholar["perf"] = [dict(r) for r in perf_rows]
+        appeal = dict(appeal) if appeal else None
     return render_template("student/dashboard.html",
                            applications=[dict(r) for r in apps],
-                           scholar=scholar)
+                           scholar=scholar, appeal=appeal)
 
 
 @app.route("/student/apply", methods=["GET", "POST"])
@@ -1039,6 +1061,166 @@ def coord_audit():
             LEFT JOIN users u ON u.id = l.user_id
             ORDER BY l.id DESC LIMIT 100""").fetchall()
     return render_template("coordinator/audit.html", logs=[dict(r) for r in rows])
+
+
+# --------------------------------------------------------------------------
+# AI Governance and Accountability Module
+# --------------------------------------------------------------------------
+
+@app.route("/coordinator/governance", methods=["GET", "POST"])
+@roles_required("coordinator", "admin", "it_expert")
+def coord_governance():
+    if request.method == "POST":
+        review_type = request.form.get("review_type", "Periodic")
+        verdict = request.form.get("verdict", "Compliant")
+        next_review = request.form.get("next_review", "").strip()
+        remarks = request.form.get("remarks", "").strip()
+        sel = model.selected_algorithm()
+        m = model.metrics().get(sel, {})
+        metrics_txt = (
+            f"Algorithm={sel} | Accuracy={m.get('accuracy', 0) * 100:.2f}% | "
+            f"Precision={m.get('precision', 0):.4f} | Recall={m.get('recall', 0):.4f} | "
+            f"F1-Score={m.get('f1_score', 0):.4f} | Error={m.get('error_rate', 0) * 100:.2f}%")
+        with get_db() as db:
+            db.execute(
+                """INSERT INTO model_reviews
+                   (reviewer_id, review_type, metrics, verdict, next_review, remarks)
+                   VALUES (?,?,?,?,?,?)""",
+                (g.user["id"], review_type, metrics_txt, verdict,
+                 next_review or None, remarks or None))
+        audit("MODEL_REVIEW",
+              f"Model performance review by {g.user['full_name']} | {verdict}"
+              f"{'; next review: ' + next_review if next_review else ''}"
+              f"{'; remarks: ' + remarks if remarks else ''}")
+        flash(f"Model review logged ({verdict}).", "success")
+        return redirect(url_for("coord_governance"))
+
+    with get_db() as db:
+        reviews = db.execute(
+            "SELECT r.*, u.full_name AS reviewer FROM model_reviews r "
+            "LEFT JOIN users u ON u.id = r.reviewer_id ORDER BY r.id DESC").fetchall()
+        appeals = db.execute("""
+            SELECT a.id, a.scholar_id, a.predicted_status, a.reason, a.status,
+                   a.decision, a.decision_remarks, a.reviewed_by, a.reviewed_at, a.created_at,
+                   u.full_name AS student_name, s.retention_status, s.student_id
+            FROM appeals a
+            JOIN users u ON u.id = a.student_id
+            JOIN scholars s ON s.id = a.scholar_id
+            ORDER BY a.id DESC""").fetchall()
+    sel = model.selected_algorithm()
+    m = model.metrics().get(sel, {})
+    return render_template("coordinator/governance.html",
+                           reviews=[dict(r) for r in reviews],
+                           appeals=[dict(r) for r in appeals],
+                           metrics=m,
+                           governance=GOVERNANCE,
+                           targets=TARGETS)
+
+
+@app.route("/coordinator/governance/appeal/<int:appeal_id>", methods=["POST"])
+@roles_required("coordinator", "admin")
+def coord_appeal_decision(appeal_id):
+    decision = request.form.get("decision", "").strip()
+    remarks = request.form.get("remarks", "").strip()
+    new_status = request.form.get("override_status", "").strip()
+    with get_db() as db:
+        row = db.execute("SELECT * FROM appeals WHERE id=?", (appeal_id,)).fetchone()
+        if row is None or row["status"] != "Pending":
+            flash("Appeal not found or already resolved.", "error")
+            return redirect(url_for("coord_governance"))
+        row = dict(row)
+        student_id = row["student_id"]
+        overridden = False
+        if decision == "Overridden":
+            if new_status not in ("Retained", "At-Risk"):
+                new_status = row["predicted_status"]
+            risk = 15.0 if new_status == "Retained" else 85.0
+            db.execute(
+                """UPDATE scholars SET retention_status=?, risk_score=?,
+                   last_predicted_at=datetime('now') WHERE id=?""",
+                (new_status, risk, row["scholar_id"]))
+            overridden = True
+        db.execute(
+            """UPDATE appeals SET status='Resolved', decision=?, decision_remarks=?,
+               reviewed_by=?, reviewed_at=datetime('now') WHERE id=?""",
+            (decision, remarks or None, g.user["id"], appeal_id))
+    audit("APPEAL_DECIDED",
+          f"Appeal #{appeal_id} {'OVERRIDDEN to ' + new_status if overridden else 'UPHELD'}"
+          f" by {g.user['full_name']}; remarks: {remarks or '-'}")
+    notify(student_id, "Appeal decision",
+           f"Your retention appeal was {decision.lower()}"
+           f"{' (status changed to ' + new_status + ')' if overridden else ''}. "
+           f"Remarks: {remarks or 'None'}")
+    flash(f"Appeal #{appeal_id} resolved ({decision}).", "success")
+    return redirect(url_for("coord_governance"))
+
+
+@app.route("/coordinator/scholars/<int:scholar_id>/override", methods=["POST"])
+@roles_required("coordinator", "admin")
+def coord_scholar_override(scholar_id):
+    new_status = request.form.get("override_status", "").strip()
+    remarks = request.form.get("remarks", "").strip()
+    if new_status not in ("Retained", "At-Risk"):
+        flash("Invalid override status.", "error")
+        return redirect(url_for("coord_scholar_detail", scholar_id=scholar_id))
+    risk = 15.0 if new_status == "Retained" else 85.0
+    with get_db() as db:
+        s = db.execute("SELECT * FROM scholars WHERE id=?", (scholar_id,)).fetchone()
+        if s is None:
+            abort(404)
+        prev = s["retention_status"]
+        db.execute(
+            """UPDATE scholars SET retention_status=?, risk_score=?,
+               last_predicted_at=datetime('now') WHERE id=?""",
+            (new_status, risk, scholar_id))
+        student_id = s["student_id"]
+    audit("PREDICTION_OVERRIDE",
+          f"Prediction {('(' + str(prev) + ')') if prev else '(none)'} overridden to '{new_status}' "
+          f"for scholar #{scholar_id} by {g.user['full_name']}; remarks: {remarks or '-'}")
+    notify(student_id, "Retention status updated",
+           "Your retention status was reviewed by the Scholarship Committee and updated to "
+           f"{new_status}.")
+    flash(f"Prediction overridden to {new_status}.", "success")
+    return redirect(url_for("coord_scholar_detail", scholar_id=scholar_id))
+
+
+@app.route("/student/appeal", methods=["POST"])
+@roles_required("student")
+def student_appeal():
+    try:
+        scholar_id = int(request.form.get("scholar_id", 0) or 0)
+    except ValueError:
+        scholar_id = 0
+    reason = request.form.get("reason", "").strip()
+    with get_db() as db:
+        scholar = db.execute(
+            "SELECT * FROM scholars WHERE id=? AND student_id=?", (scholar_id, g.user["id"])).fetchone()
+        if scholar is None or not scholar["retention_status"]:
+            flash("You can only appeal a prediction on your own active scholar record.", "error")
+            return redirect(url_for("student_dashboard"))
+        status = scholar["retention_status"]
+        open_appeal = db.execute(
+            "SELECT id FROM appeals WHERE scholar_id=? AND status='Pending'",
+            (scholar_id,)).fetchone()
+        if open_appeal:
+            flash("You already have a pending appeal for this prediction.", "warning")
+            return redirect(url_for("student_dashboard"))
+        db.execute(
+            """INSERT INTO appeals (scholar_id, student_id, predicted_status, reason)
+               VALUES (?,?,?,?)""",
+            (scholar_id, g.user["id"], status, reason or None))
+    audit("APPEAL_SUBMIT",
+          f"Student #{g.user['id']} disputed prediction '{status}' for scholar #{scholar_id}; "
+          f"reason: {reason or '-'}")
+    with get_db() as db:
+        staff = db.execute(
+            "SELECT id FROM users WHERE role IN ('coordinator','admin')").fetchall()
+    for r in staff:
+        notify(r["id"], "New retention appeal",
+               f"Scholar #{scholar_id} disputes their '{status}' prediction. "
+               "Review it in the AI Governance module.")
+    flash("Appeal submitted. The Scholarship Coordinator will review your dispute.", "success")
+    return redirect(url_for("student_dashboard"))
 
 
 @app.errorhandler(403)

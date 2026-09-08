@@ -44,6 +44,28 @@
         Predicted using {{ model_name }} ({{ model_metrics.get('accuracy')*100|round(1) }}% accuracy).
         This is decision-support only; final decisions rest with the Scholarship Coordinator.
       </p>
+
+      {% if appeal %}
+        <div class="card" style="background:#f7fafd">
+          <p class="muted">
+            <strong>Appeal {{ appeal.status }}</strong>
+            {% if appeal.status == 'Pending' %}
+              &mdash; your dispute is awaiting review by the Scholarship Coordinator.
+            {% else %}
+              &mdash; Decision: <strong>{{ appeal.decision }}</strong>
+              {% if appeal.decision_remarks %}({{ appeal.decision_remarks }}){% endif %}.
+            {% endif %}
+          </p>
+        </div>
+      {% else %}
+        <form method="post" action="{{ url_for('student_appeal') }}" class="form">
+          <input type="hidden" name="scholar_id" value="{{ scholar.id }}">
+          <label>Dispute this prediction (Appeal to the AI Governance Committee):
+            <textarea name="reason" rows="2" placeholder="State your reason for disputing the prediction..." required></textarea>
+          </label>
+          <button class="btn" type="submit">Submit Appeal</button>
+        </form>
+      {% endif %}
     {% else %}
       <p class="muted">No active scholar record. You will see your retention prediction once your
         application is approved and you are enrolled as a scholar.</p>

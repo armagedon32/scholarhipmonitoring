@@ -38,6 +38,22 @@
 </div>
 
 <div class="card">
+  <h3>Prediction Override (AI Governance)</h3>
+  <form method="post" action="{{ url_for('coord_scholar_override', scholar_id=s.id) }}" class="inline-form">
+    <select name="override_status" required>
+      <option value="" disabled selected>Override status to...</option>
+      <option value="Retained">Retained</option>
+      <option value="At-Risk">At-Risk</option>
+    </select>
+    <input type="text" name="remarks" placeholder="Justification / remarks (recorded in Audit Logs)" required>
+    <button class="btn btn-sm" type="submit">Override Prediction</button>
+  </form>
+  <p class="muted">Only the Scholarship Coordinator or Administrator may override a prediction.
+    The override, responsible user, date, and remarks are recorded in the Audit Logs as part of
+    the AI Governance and Accountability module.</p>
+</div>
+
+<div class="card">
   <h3>Academic Performance History</h3>
   {% if perf %}
   <table class="table">
