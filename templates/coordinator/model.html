@@ -21,6 +21,33 @@
 </div>
 
 <div class="card">
+  <h3>Original Source Attributes (records.xlsx)</h3>
+  <p class="muted">The dataset is sourced from the school's historical records file
+    (<code>records.xlsx</code>), which contains <strong>9 original attributes</strong>
+    per record:</p>
+  <table class="table table-sm">
+    <thead><tr><th>Original Attribute</th><th>Role in the Model</th></tr></thead>
+    <tbody>
+      <tr><td>1. Name</td><td><span class="pill pill-id">Identifier (not used as a predictor)</span></td></tr>
+      <tr><td>2. Province</td><td><span class="pill pill-id">Informational (not used as a predictor)</span></td></tr>
+      <tr><td>3. GWA</td><td><span class="pill pill-predictor">Predictor (feature)</span></td></tr>
+      <tr><td>4. Units</td><td><span class="pill pill-predictor">Predictor (feature)</span></td></tr>
+      <tr><td>5. Failed Subject</td><td><span class="pill pill-predictor">Predictor (feature)</span></td></tr>
+      <tr><td>6. Annual Family Income</td><td><span class="pill pill-predictor">Predictor (feature)</span></td></tr>
+      <tr><td>7. Attendance</td><td><span class="pill pill-predictor">Predictor (feature)</span></td></tr>
+      <tr><td>8. Socio Economic Status</td><td><span class="pill pill-predictor">Predictor (feature)</span></td></tr>
+      <tr><td>9. Prediction</td><td><span class="pill pill-target">Target / Output (Retained or At-Risk)</span></td></tr>
+    </tbody>
+  </table>
+  <p class="muted"><strong>Note on processed fields:</strong> aside from the 9 original attributes above,
+    the processed model dataset (<code>scholar_data.csv</code>) may contain additional
+    standardized fields introduced during preprocessing (e.g., <em>scholarship_type</em>,
+    <em>semester_performance</em>, <em>academic_year</em>). These processed fields are derived
+    by the system and are <strong>not directly collected</strong> from the original Excel file;
+    they should be distinguished from the source attributes listed above.</p>
+</div>
+
+<div class="card">
   <h3>Selected Algorithm: {{ selected }}</h3>
   <p class="muted">Chosen by balanced F1-score after comparing Decision Tree and
     Logistic Regression on {{ record_count }} scholar records

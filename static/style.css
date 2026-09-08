@@ -227,3 +227,6 @@ body {
 .dataset-desc ul { padding-left: 22px; margin: 10px 0 0; }
 .dataset-desc li { margin-bottom: 6px; }
 .dataset-desc strong { color: var(--brand); }
+.pill-predictor { background: #eef7e6; color: #2c6b1e; }
+.pill-target { background: #e3f0ff; color: #1b4f8a; }
+.pill-id { background: #f0f2f5; color: #68768a; }
