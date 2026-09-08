@@ -68,6 +68,39 @@
   </div>
 </div>
 
+<div class="card">
+  <h3>Confusion Matrix (Test Set &mdash; 20% Held Out)</h3>
+  {% if cm %}
+  <table class="table">
+    <thead><tr><th></th><th>Predicted At-Risk</th><th>Predicted Retained</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Actual At-Risk</strong></td>
+        <td>TN = {{ cm.get('tn', 0) }}</td>
+        <td>FP = {{ cm.get('fp', 0) }}</td>
+      </tr>
+      <tr>
+        <td><strong>Actual Retained</strong></td>
+        <td>FN = {{ cm.get('fn', 0) }}</td>
+        <td>TP = {{ cm.get('tp', 0) }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="grid grid-4">
+    <div class="stat"><div class="stat-value stat-ok">{{ cm.get('tp', 0) }}</div><div class="stat-label">True Positive (TP)</div></div>
+    <div class="stat"><div class="stat-value stat-ok">{{ cm.get('tn', 0) }}</div><div class="stat-label">True Negative (TN)</div></div>
+    <div class="stat"><div class="stat-value stat-bad">{{ cm.get('fp', 0) }}</div><div class="stat-label">False Positive (FP)</div></div>
+    <div class="stat"><div class="stat-value stat-bad">{{ cm.get('fn', 0) }}</div><div class="stat-label">False Negative (FN)</div></div>
+  </div>
+  <p class="muted">Retained is the positive class (1). The confusion matrix is automatically
+    generated from the model's predictions on the held-out test set (20% of the
+    {{ record_count }} records) and shows correct vs incorrect classifications.</p>
+  {% else %}
+  <p class="muted">No confusion matrix in the current model artifact. Retrain the model to
+    automatically generate it.</p>
+  {% endif %}
+</div>
+
 <div class="grid">
   <div class="card">
     <h3>Feature Importance</h3>

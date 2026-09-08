@@ -26,7 +26,13 @@
       "error_rate": 0.0026,
       "cv_f1_10fold": 0.9984,
       "meets_85_acc": true,
-      "meets_80_f1": true
+      "meets_80_f1": true,
+      "confusion_matrix": {
+        "tp": 948,
+        "tn": 583,
+        "fp": 2,
+        "fn": 2
+      }
     },
     "Logistic Regression": {
       "accuracy": 0.9668,
@@ -36,7 +42,13 @@
       "error_rate": 0.0332,
       "cv_f1_10fold": 0.9719,
       "meets_85_acc": true,
-      "meets_80_f1": true
+      "meets_80_f1": true,
+      "confusion_matrix": {
+        "tp": 911,
+        "tn": 573,
+        "fp": 12,
+        "fn": 39
+      }
     }
   },
   "feature_importance": [

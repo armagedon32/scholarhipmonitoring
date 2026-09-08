@@ -158,7 +158,8 @@ def train_and_report():
     from sklearn.linear_model import LogisticRegression
     from sklearn.preprocessing import StandardScaler
     from sklearn.pipeline import make_pipeline
-    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+    from sklearn.metrics import (accuracy_score, precision_score, recall_score,
+                                 f1_score, confusion_matrix)
 
     X_tr, X_te, y_tr, y_te = train_test_split(
         X, y, test_size=0.20, random_state=42, stratify=y)
@@ -181,6 +182,7 @@ def train_and_report():
         rec = recall_score(y_te, pred)
         f1 = f1_score(y_te, pred)
         err = 1 - acc
+        tn, fp, fn, tp = confusion_matrix(y_te, pred, labels=[0, 1]).ravel()
         results[name] = {
             "accuracy": round(acc, 4),
             "precision": round(prec, 4),
@@ -190,6 +192,9 @@ def train_and_report():
             "cv_f1_10fold": round(float(cv), 4),
             "meets_85_acc": acc >= Config.ACCURACY_TARGET,
             "meets_80_f1": f1 >= Config.F1_TARGET,
+            "confusion_matrix": {
+                "tp": int(tp), "tn": int(tn), "fp": int(fp), "fn": int(fn),
+            },
         }
         print(f"\n=== {name} ===")
         print(f"10-fold CV F1      : {cv:.4f}")
@@ -198,6 +203,7 @@ def train_and_report():
         print(f"Recall             : {rec:.4f}")
         print(f"F1-Score           : {f1:.4f}")
         print(f"Error rate         : {err*100:.2f}%")
+        print(f"Confusion Matrix   : TN={tn} FP={fp} | FN={fn} TP={tp}")
 
     # Select by F1 (balanced metric), ties broken by accuracy.
     best_name = max(results, key=lambda n: (results[n]["f1_score"], results[n]["accuracy"]))

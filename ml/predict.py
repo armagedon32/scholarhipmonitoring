@@ -83,6 +83,11 @@ class RetentionModel:
             return self.artifact.get("metrics", {})
         return {}
 
+    def confusion_matrix(self):
+        """TP/TN/FP/FN counts of the selected model on the held-out test set."""
+        m = self.metrics().get(self.selected_algorithm(), {})
+        return m.get("confusion_matrix") or {}
+
     def feature_importance(self):
         if self.artifact:
             return self.artifact.get("feature_importance", [])
