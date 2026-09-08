@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Retention Dataset{% endblock %}
+{% block content %}
+<h1 class="page-title">Retention Dataset</h1>
+
+<div class="card">
+  <h3>Dataset Overview</h3>
+  <p class="muted">The dataset used to train and evaluate the retention model. Each record is a
+    scholarship student / performance observation used for retention analysis.</p>
+  <div class="grid grid-4">
+    <div class="stat"><div class="stat-value">{{ record_count }}</div><div class="stat-label">Training Records (Model)</div></div>
+    <div class="stat"><div class="stat-value">{{ summary.retained }}</div><div class="stat-label">Retained (1)</div></div>
+    <div class="stat"><div class="stat-value">{{ summary.at_risk }}</div><div class="stat-label">At-Risk (0)</div></div>
+    <div class="stat"><div class="stat-value">{{ summary.file_count }}</div><div class="stat-label">Records in Source File</div></div>
+  </div>
+  <p class="muted">Source: <code>data/scholar_data.csv</code>
+    {% if summary.last_updated %}&middot; Last updated {{ summary.last_updated }}{% endif %}
+    &middot; <a class="btn btn-ghost btn-sm" href="{{ url_for('coord_dataset_export') }}">Download CSV</a></p>
+</div>
+
+<div class="card">
+  <h3>Update Dataset &amp; Retrain Model</h3>
+  <form method="post" action="{{ url_for('coord_dataset_upload') }}" enctype="multipart/form-data" class="inline-form">
+    <input type="file" name="file" accept=".csv,.tsv,.xlsx,.xlsm" required>
+    <button class="btn btn-primary" type="submit">Upload &amp; Retrain</button>
+    <button class="btn" type="submit" formaction="{{ url_for('coord_dataset_retrain') }}"
+            formmethod="post">Retrain Model Only</button>
+  </form>
+  <p class="muted">Upload the school's records file (Excel or CSV) with columns such as
+    GWA, Units, Failed Subject, Annual Family Income, Attendance, Socio Economic Status,
+    and Prediction (Retained / At-Risk). Uploading automatically retrains the model.</p>
+</div>
+
+<div class="card">
+  <h3>Records{% if summary.file_count %} ({{ summary.file_count }}){% endif %}</h3>
+  {% if rows %}
+  <div style="overflow-x:auto">
+    <table class="table table-sm">
+      <thead><tr>
+        {% for key, label in columns %}<th>{{ label }}</th>{% endfor %}
+      </tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          {% for key, label in columns %}
+            {% if key == 'retained' %}
+              <td><span class="pill {{ 'pill-ok' if r.get(key)==1 else 'pill-bad' }}">
+                {{ 'Retained' if r.get(key)==1 else 'At-Risk' }}</span></td>
+            {% elif key == 'student_name' %}
+              <td><strong>{{ r.get(key) or '—' }}</strong></td>
+            {% else %}
+              <td>{{ r.get(key) }}</td>
+            {% endif %}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">Page {{ page }} of {{ pages }} &middot; {{ per_page }} records per page.
+    {% if page > 1 %}<a class="btn btn-ghost btn-sm" href="{{ url_for('coord_dataset', page=page-1) }}">&laquo; Prev</a>{% endif %}
+    {% if page < pages %}<a class="btn btn-ghost btn-sm" href="{{ url_for('coord_dataset', page=page+1) }}">Next &raquo;</a>{% endif %}
+  </p>
+  {% else %}
+  <p class="muted">No dataset source found yet. Upload the school's records file above to load
+    the records, or retrain using the currently deployed dataset.</p>
+  {% endif %}
+</div>
+{% endblock %}

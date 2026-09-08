@@ -37,6 +37,7 @@
         <a href="{{ url_for('coord_predictions') }}" class="{{ 'active' if active_section=='predictions' }}">Retention Prediction</a>
         <a href="{{ url_for('coord_reports') }}" class="{{ 'active' if active_section=='reports' }}">Reports</a>
         <a href="{{ url_for('coord_model') }}" class="{{ 'active' if active_section=='model' }}">Model Insights</a>
+        <a href="{{ url_for('coord_dataset') }}" class="{{ 'active' if active_section=='dataset' }}">Dataset</a>
         <a href="{{ url_for('coord_audit') }}" class="{{ 'active' if active_section=='audit' }}">Audit Logs</a>
       {% else %}
         <div class="nav-title">Administration</div>
@@ -47,6 +48,7 @@
         <a href="{{ url_for('coord_predictions') }}" class="{{ 'active' if active_section=='predictions' }}">Retention Prediction</a>
         <a href="{{ url_for('coord_reports') }}" class="{{ 'active' if active_section=='reports' }}">Reports</a>
         <a href="{{ url_for('coord_model') }}" class="{{ 'active' if active_section=='model' }}">Model Insights</a>
+        <a href="{{ url_for('coord_dataset') }}" class="{{ 'active' if active_section=='dataset' }}">Dataset</a>
         <a href="{{ url_for('coord_users') }}" class="{{ 'active' if active_section=='users' }}">Users</a>
         <a href="{{ url_for('coord_audit') }}" class="{{ 'active' if active_section=='audit' }}">Audit Logs</a>
       {% endif %}

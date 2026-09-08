@@ -23,6 +23,11 @@ def check(label, resp, expect=200):
     results.append((label, ok, resp.status_code))
     return resp
 
+def check_any(label, resp, codes=(200, 302)):
+    ok = resp.status_code in codes
+    results.append((label, ok, resp.status_code))
+    return resp
+
 # Public
 check("GET /login", client.get("/"))
 
@@ -87,6 +92,9 @@ check("reports", client.get("/coordinator/reports"))
 for k in ("applicants", "roster", "performance", "retention"):
     check(f"export {k}", client.get(f"/coordinator/reports/export/{k}"))
 check("model page", client.get("/coordinator/model"))
+check("dataset page", client.get("/coordinator/dataset"))
+check("dataset page 2", client.get("/coordinator/dataset?page=2"))
+check_any("dataset export", client.get("/coordinator/dataset/export"))
 check("users", client.get("/coordinator/users"))
 check("audit", client.get("/coordinator/audit"))
 r = client.post("/coordinator/notify", data={"title": "Renewal", "message": "Submit renewal docs", "target": "all"},

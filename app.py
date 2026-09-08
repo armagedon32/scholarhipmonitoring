@@ -7,6 +7,7 @@ Catherine Mae A. Figuerrez (La Consolacion University Philippines).
 import csv
 import datetime
 import io
+import math
 import os
 import secrets
 
@@ -307,6 +308,8 @@ def inject_globals():
         "predictions": ("coord_predictions",),
         "reports": ("coord_reports",),
         "model": ("coord_model",),
+        "dataset": ("coord_dataset", "coord_dataset_upload",
+                    "coord_dataset_retrain", "coord_dataset_export"),
         "users": ("coord_users",),
         "audit": ("coord_audit",),
         "notifications": ("notifications",),
@@ -793,6 +796,131 @@ def coord_model():
                            importance=importance,
                            record_count=model.dataset_count() or 0,
                            years_trained=model.dataset_years() or 0)
+
+
+DATASET_COLUMNS = [
+    ("student_name", "Student"),
+    ("scholarship_type", "Scholarship"),
+    ("socio_status", "Socio Status"),
+    ("annual_income", "Annual Income"),
+    ("gwa", "GWA"),
+    ("failed_subjects", "Failed Subj."),
+    ("units_enrolled", "Units"),
+    ("attendance_rate", "Attendance"),
+    ("retained", "Retention"),
+]
+
+
+def _load_dataset_df():
+    """Load the training CSV (None if no dataset has been uploaded/imported yet)."""
+    if not os.path.exists(Config.DATASET_PATH):
+        return None
+    try:
+        import pandas as pd
+        return pd.read_csv(Config.DATASET_PATH)
+    except Exception as e:
+        print(f"[dataset] Could not read {Config.DATASET_PATH}: {e}")
+        return None
+
+
+def _run_retrain():
+    """Train the models on the current dataset, persist artifacts, and refresh the live model."""
+    from ml import train_model
+    artifact = train_model.train_and_report()
+    model.load(force=True)
+    audit("MODEL_RETRAIN",
+          f"Retrained on {artifact['dataset_count']} records -> {artifact['selected_algorithm']}")
+    return artifact
+
+
+@app.route("/coordinator/dataset")
+@roles_required("coordinator", "admin", "it_expert")
+def coord_dataset():
+    df = _load_dataset_df()
+    summary = {
+        "file_count": len(df) if df is not None else 0,
+        "retained": 0,
+        "at_risk": 0,
+        "last_updated": None,
+    }
+    if df is not None:
+        if "retained" in df.columns:
+            vals = df["retained"].astype(int)
+            summary["retained"] = int((vals == 1).sum())
+            summary["at_risk"] = int((vals == 0).sum())
+        if os.path.exists(Config.DATASET_PATH):
+            summary["last_updated"] = datetime.datetime.fromtimestamp(
+                os.path.getmtime(Config.DATASET_PATH)).strftime("%Y-%m-%d %H:%M")
+
+    per_page = 25
+    page = max(1, request.args.get("page", 1, type=int))
+    pages = max(1, math.ceil(summary["file_count"] / per_page)) if summary["file_count"] else 1
+    page = min(page, pages)
+    rows = []
+    if df is not None and summary["file_count"]:
+        start = (page - 1) * per_page
+        rows = df.iloc[start:start + per_page].to_dict("records")
+
+    return render_template("coordinator/dataset.html",
+                           columns=DATASET_COLUMNS, rows=rows,
+                           summary=summary, page=page, pages=pages, per_page=per_page,
+                           record_count=model.dataset_count() or 0)
+
+
+@app.route("/coordinator/dataset/upload", methods=["POST"])
+@roles_required("coordinator", "admin")
+def coord_dataset_upload():
+    from ml.convert_history import convert
+    file = request.files.get("file")
+    if file is None or not file.filename:
+        flash("Choose a CSV or Excel file to upload.", "error")
+        return redirect(url_for("coord_dataset"))
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in (".csv", ".tsv", ".xlsx", ".xlsm"):
+        flash("Unsupported file type. Use .csv, .tsv, or .xlsx.", "error")
+        return redirect(url_for("coord_dataset"))
+    os.makedirs(Config.DATA_DIR, exist_ok=True)
+    tmp = os.path.join(Config.DATA_DIR, "uploading" + ext)
+    file.save(tmp)
+    try:
+        convert(tmp, Config.DATASET_PATH)
+    except (SystemExit, ValueError, OSError) as e:
+        flash(f"Upload failed: {e}", "error")
+        return redirect(url_for("coord_dataset"))
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+    audit("DATASET_UPLOAD", f"Dataset replaced from {file.filename}")
+    artifact = _run_retrain()
+    flash(f"Dataset updated ({artifact['dataset_count']} records) and model retrained "
+          f"({artifact['selected_algorithm']}).", "success")
+    return redirect(url_for("coord_dataset"))
+
+
+@app.route("/coordinator/dataset/retrain", methods=["POST"])
+@roles_required("coordinator", "admin")
+def coord_dataset_retrain():
+    if not os.path.exists(Config.DATASET_PATH):
+        flash("Upload the dataset first before retraining.", "error")
+        return redirect(url_for("coord_dataset"))
+    artifact = _run_retrain()
+    best = artifact["metrics"][artifact["selected_algorithm"]]
+    flash(f"Model retrained on {artifact['dataset_count']} records -> "
+          f"{artifact['selected_algorithm']} (Accuracy {best['accuracy']*100:.2f}%, "
+          f"F1 {best['f1_score']}).", "success")
+    return redirect(url_for("coord_dataset"))
+
+
+@app.route("/coordinator/dataset/export")
+@roles_required("coordinator", "admin", "it_expert")
+def coord_dataset_export():
+    if not os.path.exists(Config.DATASET_PATH):
+        flash("No dataset available to export.", "error")
+        return redirect(url_for("coord_dataset"))
+    with open(Config.DATASET_PATH, encoding="utf-8") as fh:
+        text = fh.read()
+    return Response(text, mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=scholar_dataset.csv"})
 
 
 @app.route("/coordinator/users", methods=["GET", "POST"])
